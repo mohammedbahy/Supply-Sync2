@@ -1,0 +1,137 @@
+.root-pane {
+    -fx-background-color: #f4f6fb;
+    -fx-font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.main-scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-color: transparent;
+}
+
+.main-scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+.sidebar {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e6e8ef;
+    -fx-border-width: 0 1 0 0;
+}
+.brand-icon { -fx-font-size: 16px; -fx-text-fill: #2e5f8d; }
+.brand-title { -fx-font-size: 24px; -fx-font-weight: 700; -fx-text-fill: #1f2937; }
+.brand-subtitle { -fx-font-size: 11px; -fx-text-fill: #9ca3af; }
+.nav-group { -fx-padding: 16 0 0 0; }
+.nav-btn, .secondary-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #374151;
+    -fx-font-size: 14px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-max-width: 10000;
+}
+.nav-btn-active {
+    -fx-background-color: #edf2ff;
+    -fx-text-fill: #2563eb;
+    -fx-border-color: transparent transparent transparent #2563eb;
+    -fx-border-width: 0 0 0 3;
+}
+.search-placeholder {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 8;
+    -fx-padding: 10 14 10 14;
+    -fx-text-fill: #9ca3af;
+    -fx-min-width: 380;
+}
+.top-icon { -fx-background-color: #ffffff; -fx-background-radius: 14; -fx-padding: 6; }
+.user-name { -fx-font-size: 12px; -fx-text-fill: #111827; }
+.user-role { -fx-font-size: 11px; -fx-text-fill: #9ca3af; }
+.page-title { -fx-font-size: 30px; -fx-font-weight: 700; -fx-text-fill: #111827; }
+.page-subtitle { -fx-font-size: 14px; -fx-text-fill: #4b5563; }
+.outline-btn {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d1d5db;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+}
+.primary-btn {
+    -fx-background-color: #255b92;
+    -fx-text-fill: #ffffff;
+    -fx-background-radius: 6;
+}
+.chip {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d1d5db;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-font-size: 12px;
+}
+.chip-active {
+    -fx-background-color: #3b6ea5;
+    -fx-text-fill: #ffffff;
+}
+.product-card {
+    -fx-pref-width: 184;
+    -fx-background-color: #ffffff;
+    -fx-border-color: #dfe5ee;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 8;
+    -fx-spacing: 6;
+}
+.thumb {
+    -fx-pref-height: 84;
+    -fx-background-color: linear-gradient(to bottom right, #1f2937, #4b5563);
+    -fx-background-radius: 6;
+}
+.stock-green, .stock-yellow, .stock-gray {
+    -fx-font-size: 10px;
+    -fx-font-weight: 700;
+    -fx-padding: 2 8 2 8;
+    -fx-background-radius: 999;
+    -fx-max-width: 90;
+}
+.stock-green { -fx-background-color: #dcfce7; -fx-text-fill: #166534; }
+.stock-yellow { -fx-background-color: #fef3c7; -fx-text-fill: #92400e; }
+.stock-gray { -fx-background-color: #e5e7eb; -fx-text-fill: #374151; }
+.meta { -fx-font-size: 10px; -fx-font-weight: 600; -fx-text-fill: #3b82f6; }
+.product-title { -fx-font-size: 13px; -fx-font-weight: 600; -fx-text-fill: #111827; }
+.price { -fx-font-size: 15px; -fx-font-weight: 700; -fx-text-fill: #111827; }
+.units { -fx-font-size: 13px; -fx-font-weight: 600; -fx-text-fill: #1f2937; }
+.low { -fx-text-fill: #b91c1c; }
+.mini-btn {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d1d5db;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-font-size: 10px;
+}
+.primary-mini {
+    -fx-background-color: #255b92;
+    -fx-text-fill: #ffffff;
+}
+.disabled-mini {
+    -fx-background-color: #f3f4f6;
+    -fx-text-fill: #9ca3af;
+}
+.hint { -fx-font-size: 12px; -fx-text-fill: #6b7280; }
+.page-btn {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d1d5db;
+    -fx-min-width: 28;
+}
+.page-btn-active {
+    -fx-background-color: #255b92;
+    -fx-text-fill: #ffffff;
+}
+
+.qty-spinner {
+    -fx-background-color: white;
+    -fx-border-color: #d1d5db;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-font-size: 11px;
+}
+
+.qty-spinner .text-field {
+    -fx-background-color: transparent;
+    -fx-padding: 2;
+}

@@ -1,0 +1,225 @@
+.root-pane {
+    -fx-background-color: #f4f6fb;
+    -fx-font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.main-scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-color: transparent;
+}
+
+.main-scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+.sidebar {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e6e8ef;
+    -fx-border-width: 0 1 0 0;
+}
+
+.brand-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #111827;
+}
+
+.brand-subtitle {
+    -fx-font-size: 11px;
+    -fx-text-fill: #9ca3af;
+    -fx-padding: 10 0 2 0;
+}
+
+.nav-group { -fx-padding: 12 0 0 0; }
+
+.nav-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #374151;
+    -fx-font-size: 14px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-max-width: 10000;
+}
+
+.nav-btn-active {
+    -fx-background-color: #edf2ff;
+    -fx-text-fill: #2563eb;
+    -fx-font-weight: 600;
+}
+
+.secondary-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #4b5563;
+    -fx-font-size: 13px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-max-width: 10000;
+}
+
+.search-placeholder {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 7;
+    -fx-padding: 10 14 10 14;
+    -fx-text-fill: #9ca3af;
+    -fx-min-width: 360;
+}
+
+.top-icon {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 14;
+    -fx-padding: 6;
+}
+
+.page-title {
+    -fx-font-size: 42px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #111827;
+}
+
+.page-subtitle {
+    -fx-font-size: 14px;
+    -fx-text-fill: #6b7280;
+}
+
+.outline-btn {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d1d5db;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+}
+
+.primary-btn {
+    -fx-background-color: #255b92;
+    -fx-text-fill: #ffffff;
+    -fx-background-radius: 6;
+}
+
+.metric-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 10;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 10;
+    -fx-padding: 14;
+    -fx-spacing: 8;
+}
+
+.metric-label {
+    -fx-font-size: 11px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #6b7280;
+}
+
+.metric-value {
+    -fx-font-size: 38px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #111827;
+}
+
+.metric-value-small {
+    -fx-font-size: 24px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #111827;
+}
+
+.metric-tag {
+    -fx-font-size: 11px;
+    -fx-padding: 3 6 3 6;
+    -fx-background-color: #dbeafe;
+    -fx-text-fill: #1e40af;
+    -fx-background-radius: 6;
+}
+
+.panel {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 10;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 10;
+    -fx-padding: 10;
+    -fx-spacing: 8;
+}
+
+.table-head, .table-row {
+    -fx-spacing: 8;
+    -fx-padding: 8 2 8 2;
+}
+
+.head-cell {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #6b7280;
+}
+
+.body-cell {
+    -fx-font-size: 13px;
+    -fx-text-fill: #1f2937;
+}
+
+.col-name { -fx-pref-width: 220; }
+.col-type { -fx-pref-width: 70; }
+.col-rate { -fx-pref-width: 130; }
+.col-last { -fx-pref-width: 120; }
+.col-status { -fx-pref-width: 100; }
+.col-actions { -fx-pref-width: 50; }
+
+.type-vip, .type-neutral {
+    -fx-pref-width: 70;
+    -fx-font-size: 11px;
+    -fx-font-weight: 600;
+    -fx-padding: 3 8 3 8;
+    -fx-background-radius: 6;
+}
+
+.type-vip {
+    -fx-background-color: #dbeafe;
+    -fx-text-fill: #1e3a8a;
+}
+
+.type-neutral {
+    -fx-background-color: #f3f4f6;
+    -fx-text-fill: #374151;
+}
+
+.status-active {
+    -fx-text-fill: #16a34a;
+    -fx-font-size: 12px;
+}
+
+.status-muted {
+    -fx-text-fill: #6b7280;
+    -fx-font-size: 12px;
+}
+
+.hint {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+.page-btn {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d1d5db;
+    -fx-min-width: 28;
+}
+
+.page-btn-active {
+    -fx-background-color: #255b92;
+    -fx-text-fill: #ffffff;
+}
+
+.insight-card {
+    -fx-background-color: #eef3fb;
+    -fx-background-radius: 10;
+    -fx-border-color: #d6e1f1;
+    -fx-border-radius: 10;
+    -fx-padding: 14;
+    -fx-spacing: 6;
+}
+
+.insight-title {
+    -fx-font-size: 17px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #1f2937;
+}
+
+.insight-text {
+    -fx-font-size: 13px;
+    -fx-text-fill: #4b5563;
+}

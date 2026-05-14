@@ -1,0 +1,103 @@
+.root-pane {
+    -fx-background-color: #f4f6fb;
+    -fx-font-family: "Segoe UI", Arial, sans-serif;
+}
+.sidebar {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e6e8ef;
+    -fx-border-width: 0 1 0 0;
+}
+.brand-icon { -fx-font-size: 16px; -fx-text-fill: #2e5f8d; }
+.brand-title { -fx-font-size: 24px; -fx-font-weight: 700; -fx-text-fill: #1f2937; }
+.brand-subtitle { -fx-font-size: 11px; -fx-text-fill: #9ca3af; }
+.nav-group { -fx-padding: 16 0 0 0; }
+.nav-btn, .secondary-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #374151;
+    -fx-font-size: 14px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-max-width: 10000;
+}
+.nav-btn-active {
+    -fx-background-color: #edf2ff;
+    -fx-text-fill: #2563eb;
+    -fx-border-color: transparent transparent transparent #2563eb;
+    -fx-border-width: 0 0 0 3;
+}
+.search-placeholder {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 8;
+    -fx-padding: 10 14 10 14;
+    -fx-text-fill: #9ca3af;
+    -fx-min-width: 360;
+}
+.top-icon { -fx-background-color: #ffffff; -fx-background-radius: 14; -fx-padding: 6; }
+.user-name { -fx-font-size: 12px; -fx-text-fill: #111827; }
+.user-role { -fx-font-size: 11px; -fx-text-fill: #6b7280; }
+.crumb { -fx-font-size: 12px; -fx-text-fill: #6b7280; }
+.panel {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 12;
+    -fx-spacing: 8;
+}
+.page-title { -fx-font-size: 20px; -fx-font-weight: 700; -fx-text-fill: #111827; }
+.page-subtitle { -fx-font-size: 13px; -fx-text-fill: #6b7280; }
+.stock-green {
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-padding: 3 10 3 10;
+    -fx-background-color: #dcfce7;
+    -fx-text-fill: #166534;
+    -fx-background-radius: 999;
+}
+.hero-image {
+    -fx-pref-height: 260;
+    -fx-background-color: linear-gradient(to bottom right, #94a3b8, #cbd5e1);
+    -fx-background-radius: 6;
+}
+.section-title { -fx-font-size: 16px; -fx-font-weight: 600; -fx-text-fill: #111827; }
+.body-text { -fx-font-size: 13px; -fx-text-fill: #374151; }
+.spec-card {
+    -fx-background-color: #eef3fb;
+    -fx-border-color: #d9e3f1;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 10;
+    -fx-spacing: 4;
+}
+.spec-label { -fx-font-size: 11px; -fx-font-weight: 700; -fx-text-fill: #6b7280; }
+.spec-value { -fx-font-size: 13px; -fx-font-weight: 600; -fx-text-fill: #1f2937; }
+.small-label { -fx-font-size: 11px; -fx-font-weight: 700; -fx-text-fill: #6b7280; }
+.price-main { -fx-font-size: 34px; -fx-font-weight: 700; -fx-text-fill: #1d4e89; }
+.strong { -fx-font-weight: 700; -fx-text-fill: #1f2937; }
+.tier-card {
+    -fx-background-color: #f8fafc;
+    -fx-border-color: #dbe3ee;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 10;
+    -fx-spacing: 4;
+}
+.tier-active { -fx-background-color: #e8f0ff; -fx-border-color: #bfd4ff; }
+.primary-btn {
+    -fx-background-color: #255b92;
+    -fx-text-fill: #ffffff;
+    -fx-background-radius: 6;
+    -fx-font-weight: 600;
+}
+.full-btn { -fx-max-width: 10000; }
+.hint { -fx-font-size: 12px; -fx-text-fill: #6b7280; }
+.center-text { -fx-text-alignment: center; }
+.asset-btn {
+    -fx-background-color: #eef3fb;
+    -fx-border-color: #d9e3f1;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-text-fill: #1d4e89;
+    -fx-alignment: CENTER_LEFT;
+    -fx-max-width: 10000;
+}
+.footer-text { -fx-font-size: 12px; -fx-text-fill: #6b7280; }

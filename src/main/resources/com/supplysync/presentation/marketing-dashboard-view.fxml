@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.supplysync.presentation.MarketingDashboardController" stylesheets="@marketing-dashboard.css" styleClass="root-pane">
+    <left>
+        <VBox prefWidth="220.0" styleClass="sidebar">
+            <padding>
+                <Insets top="18.0" right="18.0" bottom="18.0" left="18.0"/>
+            </padding>
+            <HBox spacing="10.0" alignment="CENTER_LEFT">
+                <Label text="▣" styleClass="brand-icon"/>
+                <VBox spacing="1.0">
+                    <Label text="SupplySync" styleClass="brand-title"/>
+                    <Label text="MARKETING PORTAL" styleClass="brand-subtitle"/>
+                </VBox>
+            </HBox>
+            <VBox spacing="8.0" styleClass="nav-group">
+                <Button text="Dashboard" onAction="#openMarketingDashboard" styleClass="nav-btn nav-btn-active"/>
+                <Button text="Products" onAction="#openProductCatalog" styleClass="nav-btn"/>
+                <Button text="My Orders" onAction="#openMyOrders" styleClass="nav-btn"/>
+            </VBox>
+            <Region VBox.vgrow="ALWAYS"/>
+            <Button text="Logout" onAction="#logout" styleClass="secondary-btn"/>
+        </VBox>
+    </left>
+
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="main-scroll-pane">
+        <VBox spacing="14.0" styleClass="main-area">
+            <padding>
+                <Insets top="12.0" right="20.0" bottom="16.0" left="20.0"/>
+            </padding>
+
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                <TextField fx:id="searchField" promptText="Search operations..." styleClass="search-field" HBox.hgrow="ALWAYS" onMouseClicked="#handleSearch"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label text="🔔" styleClass="top-icon" onMouseClicked="#openMessages"/>
+                <Label text="❔" styleClass="top-icon" onMouseClicked="#showHelp"/>
+                <VBox>
+                    <Label fx:id="userNameLabel" text="Marcus Miller" styleClass="user-name"/>
+                    <Label text="Senior Affiliate" styleClass="user-role"/>
+                </VBox>
+            </HBox>
+
+            <HBox alignment="CENTER_LEFT">
+                <VBox spacing="2.0">
+                    <Label text="Dashboard Overview" styleClass="page-title"/>
+                    <Label text="Track your distribution metrics and commission growth." styleClass="page-subtitle"/>
+                </VBox>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="Export Report" styleClass="outline-btn"/>
+                <Button text="New Campaign" styleClass="primary-btn"/>
+            </HBox>
+
+            <HBox spacing="12.0">
+                <VBox HBox.hgrow="ALWAYS" styleClass="metric-card">
+                    <HBox><Label text="🗂"/><Region HBox.hgrow="ALWAYS"/><Label text="+12%" styleClass="metric-green"/></HBox>
+                    <Label text="My Total Orders" styleClass="metric-label"/>
+                    <Label fx:id="totalOrdersLabel" text="0" styleClass="metric-value"/>
+                </VBox>
+                <VBox HBox.hgrow="ALWAYS" styleClass="metric-card">
+                    <HBox><Label text="📁"/><Region HBox.hgrow="ALWAYS"/><Label text="pending" styleClass="metric-yellow"/></HBox>
+                    <Label text="Pending Commissions" styleClass="metric-label"/>
+                    <Label fx:id="pendingCommissionsLabel" text="\$0.00" styleClass="metric-value"/>
+                </VBox>
+                <VBox HBox.hgrow="ALWAYS" styleClass="metric-card">
+                    <HBox><Label text="🚚"/><Region HBox.hgrow="ALWAYS"/><Label text="success" styleClass="metric-green"/></HBox>
+                    <Label text="Successful Deliveries" styleClass="metric-label"/>
+                    <Label fx:id="successfulDeliveriesLabel" text="0" styleClass="metric-value"/>
+                </VBox>
+                <VBox HBox.hgrow="ALWAYS" styleClass="metric-card">
+                    <HBox><Label text="💳"/><Region HBox.hgrow="ALWAYS"/><Label text="earnings" styleClass="metric-green"/></HBox>
+                    <Label text="Total Earnings" styleClass="metric-label"/>
+                    <Label fx:id="totalEarningsLabel" text="\$0.00" styleClass="metric-value"/>
+                </VBox>
+            </HBox>
+
+            <HBox spacing="12.0" VBox.vgrow="ALWAYS">
+                <VBox HBox.hgrow="ALWAYS" styleClass="panel">
+                    <HBox>
+                        <Label text="Recent Orders" styleClass="panel-title"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button text="View All" styleClass="link-btn"/>
+                    </HBox>
+                    <Separator/>
+                    <HBox styleClass="table-head">
+                        <Label text="Order ID" styleClass="col-id head-cell"/>
+                        <Label text="Customer" styleClass="col-customer head-cell"/>
+                        <Label text="Date" styleClass="col-date head-cell"/>
+                        <Label text="Amount" styleClass="col-amount head-cell"/>
+                        <Label text="Status" styleClass="col-status head-cell"/>
+                    </HBox>
+                    <VBox fx:id="recentOrdersContainer"/>
+                </VBox>
+
+                <VBox prefWidth="300.0" spacing="12.0">
+                    <VBox styleClass="panel">
+                        <Label text="Top Selling Products" styleClass="panel-title"/>
+                        <VBox fx:id="topSellingContainer" spacing="10.0"/>
+                    </VBox>
+                </VBox>
+            </HBox>
+        </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>

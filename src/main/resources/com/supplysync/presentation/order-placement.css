@@ -1,0 +1,136 @@
+.root-pane {
+    -fx-background-color: #f4f6fb;
+    -fx-font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.main-scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-color: transparent;
+}
+
+.main-scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+.sidebar {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e6e8ef;
+    -fx-border-width: 0 1 0 0;
+}
+.brand-icon { -fx-font-size: 16px; -fx-text-fill: #2e5f8d; }
+.brand-title { -fx-font-size: 24px; -fx-font-weight: 700; -fx-text-fill: #1f2937; }
+.brand-subtitle { -fx-font-size: 11px; -fx-text-fill: #9ca3af; }
+.nav-group { -fx-padding: 16 0 0 0; }
+.nav-btn, .secondary-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #374151;
+    -fx-font-size: 14px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-max-width: 10000;
+}
+.nav-btn-active {
+    -fx-background-color: #edf2ff;
+    -fx-text-fill: #2563eb;
+    -fx-border-color: transparent transparent transparent #2563eb;
+    -fx-border-width: 0 0 0 3;
+}
+.search-placeholder {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 8;
+    -fx-padding: 10 14 10 14;
+    -fx-text-fill: #9ca3af;
+    -fx-min-width: 300;
+}
+.top-icon { -fx-background-color: #ffffff; -fx-background-radius: 14; -fx-padding: 6; }
+.page-title { -fx-font-size: 30px; -fx-font-weight: 700; -fx-text-fill: #111827; }
+.page-subtitle { -fx-font-size: 14px; -fx-text-fill: #4b5563; }
+.outline-btn {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d1d5db;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+}
+.primary-btn {
+    -fx-background-color: #255b92;
+    -fx-text-fill: #ffffff;
+    -fx-background-radius: 6;
+    -fx-font-weight: 600;
+}
+.panel {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 10;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 10;
+    -fx-padding: 12;
+    -fx-spacing: 8;
+}
+.panel-title { -fx-font-size: 17px; -fx-font-weight: 600; -fx-text-fill: #1f2937; }
+.small-label { -fx-font-size: 11px; -fx-font-weight: 600; -fx-text-fill: #6b7280; }
+.text-field, .text-area {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d1d5db;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+}
+.table-head, .table-row { -fx-spacing: 8; -fx-padding: 6 0 6 0; }
+.head-cell { -fx-font-size: 11px; -fx-font-weight: 600; -fx-text-fill: #6b7280; }
+.body-cell { -fx-font-size: 13px; -fx-text-fill: #111827; }
+.col-product { -fx-pref-width: 250; }
+.col-qty { -fx-pref-width: 40; }
+.col-price { -fx-pref-width: 85; }
+.col-total { -fx-pref-width: 85; }
+.strong { -fx-font-weight: 700; }
+.link-btn { -fx-background-color: transparent; -fx-text-fill: #2563eb; }
+.option-card {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d1d5db;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 8;
+}
+.option-card-active { -fx-border-color: #2563eb; -fx-background-color: #f8fbff; }
+.hint { -fx-font-size: 12px; -fx-text-fill: #6b7280; }
+.summary-panel {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 12;
+    -fx-spacing: 8;
+}
+.summary-title {
+    -fx-background-color: #0f1f3d;
+    -fx-text-fill: #ffffff;
+    -fx-padding: 8 10 8 10;
+    -fx-background-radius: 6;
+    -fx-font-size: 16px;
+    -fx-font-weight: 600;
+}
+.total-label { -fx-font-size: 14px; -fx-font-weight: 700; }
+.total-value { -fx-font-size: 27px; -fx-font-weight: 700; -fx-text-fill: #1d4e89; }
+.commission-box {
+    -fx-background-color: #eef3fb;
+    -fx-background-radius: 8;
+    -fx-padding: 10;
+    -fx-spacing: 4;
+}
+.mini-label { -fx-font-size: 10px; -fx-font-weight: 600; -fx-text-fill: #6b7280; }
+.rate-pill {
+    -fx-font-size: 10px;
+    -fx-font-weight: 700;
+    -fx-background-color: #3b82f6;
+    -fx-text-fill: #ffffff;
+    -fx-background-radius: 999;
+    -fx-padding: 3 8 3 8;
+}
+.commission-value { -fx-font-size: 28px; -fx-font-weight: 700; -fx-text-fill: #1d4e89; }
+.full-btn { -fx-max-width: 10000; }
+.center-text { -fx-text-alignment: center; }
+.help-box {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 12;
+    -fx-spacing: 6;
+}

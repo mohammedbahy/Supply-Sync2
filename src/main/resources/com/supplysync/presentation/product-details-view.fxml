@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.supplysync.presentation.ProductDetailsController" stylesheets="@product-details.css" styleClass="root-pane">
+    <left>
+        <VBox prefWidth="220.0" styleClass="sidebar">
+            <padding><Insets top="18.0" right="18.0" bottom="18.0" left="18.0"/></padding>
+            <HBox spacing="10.0" alignment="CENTER_LEFT">
+                <Label text="▣" styleClass="brand-icon"/>
+                <VBox spacing="1.0">
+                    <Label text="SupplySync" styleClass="brand-title"/>
+                    <Label text="MARKETING PORTAL" styleClass="brand-subtitle"/>
+                </VBox>
+            </HBox>
+            <VBox spacing="8.0" styleClass="nav-group">
+                <Button text="Dashboard" onAction="#openMarketingDashboard" styleClass="nav-btn"/>
+                <Button text="Products" onAction="#openProductCatalog" styleClass="nav-btn nav-btn-active"/>
+                <Button text="My Orders" onAction="#openMyOrders" styleClass="nav-btn"/>
+            </VBox>
+            <Region VBox.vgrow="ALWAYS"/>
+            <Button text="Settings" onAction="#openSettings" styleClass="secondary-btn"/>
+            <Button text="Logout" onAction="#logout" styleClass="secondary-btn"/>
+        </VBox>
+    </left>
+
+    <center>
+        <VBox spacing="12.0" styleClass="main-area">
+            <padding><Insets top="10.0" right="20.0" bottom="14.0" left="20.0"/></padding>
+
+            <HBox spacing="10.0" alignment="CENTER_LEFT">
+                <Label text="Search inventory, SKU, or category..." styleClass="search-placeholder"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label text="🔔" styleClass="top-icon"/>
+                <Label text="❔" styleClass="top-icon"/>
+                <VBox>
+                    <Label text="Alex Rivera" styleClass="user-name"/>
+                    <Label text="SENIOR MARKETER" styleClass="user-role"/>
+                </VBox>
+                <Label text="👤" styleClass="top-icon"/>
+            </HBox>
+
+            <Label text="Products  ›  Infrastructure  ›  Precision Core Series X1" styleClass="crumb"/>
+
+            <HBox spacing="14.0" VBox.vgrow="ALWAYS">
+                <VBox HBox.hgrow="ALWAYS" spacing="12.0">
+                    <VBox styleClass="panel">
+                        <HBox>
+                            <VBox spacing="2.0">
+                                <Label text="Precision Core Series X1" styleClass="page-title"/>
+                                <Label text="SKU: IND-PRC-X1-2024" styleClass="page-subtitle"/>
+                            </VBox>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label text="IN STOCK" styleClass="stock-green"/>
+                        </HBox>
+
+                        <Region styleClass="hero-image"/>
+
+                        <VBox spacing="6.0">
+                            <Label text="Product Description" styleClass="section-title"/>
+                            <Label wrapText="true" text="The Precision Core Series X1 represents the pinnacle of industrial automation hardware. Engineered for high-throughput distribution environments, this module offers unparalleled reliability and real-time processing capabilities. Its proprietary thermal management system ensures peak performance under maximum load, while the modular interface allows for seamless integration with existing SupplySync infrastructure." styleClass="body-text"/>
+                        </VBox>
+                    </VBox>
+
+                    <VBox spacing="8.0">
+                        <Label text="Technical Specifications" styleClass="section-title"/>
+                        <HBox spacing="8.0">
+                            <VBox HBox.hgrow="ALWAYS" styleClass="spec-card">
+                                <Label text="PROCESSOR" styleClass="spec-label"/>
+                                <Label text="Octa-Core Neural Engine 4.2GHz" styleClass="spec-value"/>
+                            </VBox>
+                            <VBox HBox.hgrow="ALWAYS" styleClass="spec-card">
+                                <Label text="CONNECTIVITY" styleClass="spec-label"/>
+                                <Label text="Dual 10GbE / WiFi 6E / Bluetooth 5.3" styleClass="spec-value"/>
+                            </VBox>
+                        </HBox>
+                        <HBox spacing="8.0">
+                            <VBox HBox.hgrow="ALWAYS" styleClass="spec-card">
+                                <Label text="OPERATING TEMP" styleClass="spec-label"/>
+                                <Label text="-20°C to +85°C (Industrial Grade)" styleClass="spec-value"/>
+                            </VBox>
+                            <VBox HBox.hgrow="ALWAYS" styleClass="spec-card">
+                                <Label text="INPUT POWER" styleClass="spec-label"/>
+                                <Label text="24V DC / PoE+ Compatible" styleClass="spec-value"/>
+                            </VBox>
+                        </HBox>
+                    </VBox>
+                </VBox>
+
+                <VBox prefWidth="330.0" spacing="12.0">
+                    <VBox styleClass="panel">
+                        <Label text="MSRP / SINGLE UNIT" styleClass="small-label"/>
+                        <Label text="\$1,249.00" styleClass="price-main"/>
+                        <Separator/>
+                        <HBox><Label text="Available Quantity"/><Region HBox.hgrow="ALWAYS"/><Label text="412 Units" styleClass="strong"/></HBox>
+                        <HBox><Label text="Warehouse"/><Region HBox.hgrow="ALWAYS"/><Label text="Central-Alpha" styleClass="strong"/></HBox>
+                        <Separator/>
+                        <Label text="Wholesale Tiers" styleClass="section-title"/>
+                        <VBox styleClass="tier-card tier-active"><HBox><Label text="10+ Units"/><Region HBox.hgrow="ALWAYS"/><Label text="\$1,120.00 /ea" styleClass="strong"/></HBox><Label text="Recommended Tier" styleClass="hint"/></VBox>
+                        <VBox styleClass="tier-card"><HBox><Label text="50+ Units"/><Region HBox.hgrow="ALWAYS"/><Label text="\$1,045.00 /ea" styleClass="strong"/></HBox></VBox>
+                        <VBox styleClass="tier-card"><HBox><Label text="100+ Units"/><Region HBox.hgrow="ALWAYS"/><Label text="\$980.00 /ea" styleClass="strong"/></HBox></VBox>
+                        <Button text="Order Now" styleClass="primary-btn full-btn"/>
+                        <Label text="Quotes valid for 15 days. Subject to availability." wrapText="true" styleClass="hint center-text"/>
+                    </VBox>
+
+                    <VBox styleClass="panel">
+                        <Label text="MARKETING ASSETS" styleClass="small-label"/>
+                        <Button text="Datasheet_X1_RevC.pdf" styleClass="asset-btn"/>
+                        <Button text="High-Res_Press_Kit.zip" styleClass="asset-btn"/>
+                    </VBox>
+                </VBox>
+            </HBox>
+
+            <Label text="© 2024 SupplySync Distribution Solutions. All rights reserved." styleClass="footer-text"/>
+        </VBox>
+    </center>
+</BorderPane>
