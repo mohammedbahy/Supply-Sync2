@@ -10,6 +10,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Priority?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
 <HBox xmlns:fx="http://javafx.com/fxml" fx:controller="com.supplysync.presentation.LoginController" styleClass="auth-root" stylesheets="@auth.css">
@@ -39,7 +40,11 @@
 
         <VBox spacing="6.0">
             <Label text="Password" styleClass="field-label"/>
-            <PasswordField fx:id="passwordField" promptText="Enter your password"/>
+            <StackPane>
+                <PasswordField fx:id="passwordField" promptText="Enter your password"/>
+                <TextField fx:id="passwordPlainField" promptText="Enter your password" visible="false" managed="false"/>
+            </StackPane>
+            <CheckBox fx:id="showPasswordCheck" text="Show password"/>
         </VBox>
 
         <HBox alignment="CENTER_LEFT" spacing="8.0">

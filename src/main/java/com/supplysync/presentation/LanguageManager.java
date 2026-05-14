@@ -27,6 +27,8 @@ public class LanguageManager {
         add("Welcome back", "مرحباً بعودتك");
         add("Email", "البريد الإلكتروني");
         add("Password", "كلمة المرور");
+        add("Show password", "إظهار كلمة المرور");
+        add("Show passwords", "إظهار كلمات المرور");
         add("Sign In", "تسجيل الدخول");
         add("Create account", "إنشاء حساب");
 

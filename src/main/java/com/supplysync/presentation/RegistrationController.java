@@ -1,6 +1,7 @@
 package com.supplysync.presentation;
 
 import com.supplysync.models.User;
+import com.supplysync.presentation.auth.PasswordRevealSupport;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -22,9 +23,25 @@ public class RegistrationController extends BaseScreenController {
     @FXML
     private PasswordField passwordField;
     @FXML
+    private TextField passwordPlainField;
+    @FXML
     private PasswordField confirmPasswordField;
     @FXML
+    private TextField confirmPlainField;
+    @FXML
+    private CheckBox showPasswordCheck;
+    @FXML
     private CheckBox agreeCheckBox;
+
+    @FXML
+    public void initialize() {
+        if (showPasswordCheck != null && passwordField != null && passwordPlainField != null
+                && confirmPasswordField != null && confirmPlainField != null) {
+            PasswordRevealSupport.bindDual(showPasswordCheck, passwordField, passwordPlainField,
+                    confirmPasswordField, confirmPlainField);
+            showPasswordCheck.setText(LanguageManager.get("Show passwords"));
+        }
+    }
 
     @FXML
     private void createAccount(ActionEvent event) throws IOException {
@@ -32,8 +49,8 @@ public class RegistrationController extends BaseScreenController {
         String lastName = lastNameField.getText();
         String email = emailField.getText();
         String company = companyField.getText();
-        String password = passwordField.getText();
-        String confirmPassword = confirmPasswordField.getText();
+        String password = PasswordRevealSupport.effectivePassword(showPasswordCheck, passwordField, passwordPlainField);
+        String confirmPassword = PasswordRevealSupport.effectivePassword(showPasswordCheck, confirmPasswordField, confirmPlainField);
 
         if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || 
             company.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {

@@ -8,4 +8,7 @@ module com.library.supplysync {
     opens com.supplysync.presentation to javafx.fxml;
     exports com.library.supplysync;
     exports com.supplysync.presentation;
+    exports com.supplysync.facade;
+    exports com.supplysync.dashboard;
+    exports com.supplysync.models;
 }

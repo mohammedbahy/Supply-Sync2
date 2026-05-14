@@ -10,6 +10,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Priority?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
 <HBox xmlns:fx="http://javafx.com/fxml" fx:controller="com.supplysync.presentation.RegistrationController" styleClass="auth-root" stylesheets="@auth.css">
@@ -56,14 +57,21 @@
         <HBox spacing="10.0">
             <VBox HBox.hgrow="ALWAYS" spacing="6.0">
                 <Label text="Password" styleClass="field-label"/>
-                <PasswordField fx:id="passwordField" promptText="Create password"/>
+                <StackPane>
+                    <PasswordField fx:id="passwordField" promptText="Create password"/>
+                    <TextField fx:id="passwordPlainField" promptText="Create password" visible="false" managed="false"/>
+                </StackPane>
             </VBox>
             <VBox HBox.hgrow="ALWAYS" spacing="6.0">
                 <Label text="Confirm Password" styleClass="field-label"/>
-                <PasswordField fx:id="confirmPasswordField" promptText="Confirm password"/>
+                <StackPane>
+                    <PasswordField fx:id="confirmPasswordField" promptText="Confirm password"/>
+                    <TextField fx:id="confirmPlainField" promptText="Confirm password" visible="false" managed="false"/>
+                </StackPane>
             </VBox>
         </HBox>
 
+        <CheckBox fx:id="showPasswordCheck" text="Show passwords"/>
         <CheckBox fx:id="agreeCheckBox" text="I agree to the Terms and Privacy Policy"/>
         <Button text="Create Account" onAction="#createAccount" styleClass="primary-btn"/>
 

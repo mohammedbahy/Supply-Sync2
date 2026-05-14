@@ -1,8 +1,10 @@
 package com.supplysync.presentation;
 
+import com.supplysync.presentation.auth.PasswordRevealSupport;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 
@@ -14,13 +16,29 @@ public class ForgotPasswordController extends BaseScreenController {
     @FXML
     private PasswordField passwordField;
     @FXML
+    private TextField passwordPlainField;
+    @FXML
     private PasswordField confirmPasswordField;
+    @FXML
+    private TextField confirmPlainField;
+    @FXML
+    private CheckBox showPasswordCheck;
+
+    @FXML
+    public void initialize() {
+        if (showPasswordCheck != null && passwordField != null && passwordPlainField != null
+                && confirmPasswordField != null && confirmPlainField != null) {
+            PasswordRevealSupport.bindDual(showPasswordCheck, passwordField, passwordPlainField,
+                    confirmPasswordField, confirmPlainField);
+            showPasswordCheck.setText(LanguageManager.get("Show passwords"));
+        }
+    }
 
     @FXML
     private void resetPassword(ActionEvent event) throws IOException {
         String email = emailField.getText();
-        String password = passwordField.getText();
-        String confirmPassword = confirmPasswordField.getText();
+        String password = PasswordRevealSupport.effectivePassword(showPasswordCheck, passwordField, passwordPlainField);
+        String confirmPassword = PasswordRevealSupport.effectivePassword(showPasswordCheck, confirmPasswordField, confirmPlainField);
 
         if (email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
             showAlert("Validation Error", "All fields are required.");

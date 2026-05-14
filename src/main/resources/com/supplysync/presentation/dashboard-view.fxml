@@ -13,7 +13,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.supplysync.presentation.DashboardController" stylesheets="@dashboard.css" styleClass="root-pane">
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:id="root" fx:controller="com.supplysync.presentation.DashboardController" stylesheets="@dashboard.css" styleClass="root-pane">
     <left>
         <VBox prefWidth="220.0" styleClass="sidebar">
             <padding>

@@ -1,14 +1,15 @@
 package com.supplysync.presentation;
 
+import com.supplysync.models.User;
+import com.supplysync.presentation.auth.PasswordRevealSupport;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-
-import java.io.IOException;
-
-import com.supplysync.models.User;
 import javafx.scene.control.Alert;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+
+import java.io.IOException;
 import java.util.Optional;
 
 public class LoginController extends BaseScreenController {
@@ -19,9 +20,23 @@ public class LoginController extends BaseScreenController {
     private PasswordField passwordField;
 
     @FXML
+    private TextField passwordPlainField;
+
+    @FXML
+    private CheckBox showPasswordCheck;
+
+    @FXML
+    public void initialize() {
+        if (showPasswordCheck != null && passwordField != null && passwordPlainField != null) {
+            PasswordRevealSupport.bindSingle(showPasswordCheck, passwordField, passwordPlainField);
+            showPasswordCheck.setText(LanguageManager.get("Show password"));
+        }
+    }
+
+    @FXML
     private void signIn(ActionEvent event) throws IOException {
         String email = emailField.getText();
-        String password = passwordField.getText();
+        String password = PasswordRevealSupport.effectivePassword(showPasswordCheck, passwordField, passwordPlainField);
 
         if (email == null || email.trim().isEmpty() || password == null || password.trim().isEmpty()) {
             showAlert("Validation Error", "Please enter both email and password.");
