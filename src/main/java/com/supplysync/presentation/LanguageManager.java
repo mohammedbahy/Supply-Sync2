@@ -33,6 +33,18 @@ public class LanguageManager {
         add("Country is required", "الدولة مطلوبة.");
         add("Customer name is required", "اسم العميل مطلوب.");
         add("Validation Error", "خطأ في التحقق");
+        add("Stock limit", "لا يمكن إضافة أكثر من الكمية المتاحة في المخزون (مع مراعاة ما في السلة).");
+        add("No saved draft", "لا توجد مسودة محفوظة.");
+        add("Load draft", "تحميل المسودة");
+        add("Replace cart with draft", "السلة الحالية غير فارغة. استبدالها بمحتويات المسودة؟");
+        add("Draft loaded", "تم تحميل المسودة إلى السلة والحقول.");
+        add("Draft discarded", "تم حذف المسودة المحفوظة.");
+        add("Remove draft", "حذف المسودة");
+        add("Draft saved title", "تم حفظ المسودة");
+        add("Draft saved detail", "تم حفظ السلة وبيانات العميل. افتح «طلباتي» لتحميل المسودة أو تعديلها.");
+        add("Saved draft hint", "لديك مسودة طلب محفوظة. افتح «طلباتي» واضغط «تحميل المسودة» في أعلى الصفحة.");
+        add("No sales yet", "لا توجد مبيعات بعد — أضف منتجات إلى طلباتك لتظهر الأكثر مبيعاً.");
+        add("Units sold", "الوحدات المباعة");
         add("Sign In", "تسجيل الدخول");
         add("Create account", "إنشاء حساب");
 

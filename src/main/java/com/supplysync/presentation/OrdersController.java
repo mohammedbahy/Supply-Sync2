@@ -2,6 +2,7 @@ package com.supplysync.presentation;
 
 import com.supplysync.models.Marketer;
 import com.supplysync.models.MarketerCancelResult;
+import com.supplysync.models.MarketerOrderDraft;
 import com.supplysync.models.Order;
 import com.supplysync.models.OrderStatuses;
 import com.supplysync.models.Product;
@@ -19,11 +20,14 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
+import javafx.scene.control.ButtonType;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class OrdersController extends BaseScreenController {
@@ -47,6 +51,10 @@ public class OrdersController extends BaseScreenController {
     private TextField orderSearchField;
     @FXML
     private Label userNameLabel;
+    @FXML
+    private HBox draftBanner;
+    @FXML
+    private Label draftBannerText;
 
     @Override
     public void setOrderFacade(com.supplysync.facade.OrderFacade orderFacade) {
@@ -61,7 +69,7 @@ public class OrdersController extends BaseScreenController {
             if (u.getPrefCustomerPhone() != null && !u.getPrefCustomerPhone().isBlank()) {
                 phoneField.setText(u.getPrefCustomerPhone());
             }
-            if (u.getPrefCustomerCountry() != null && !u.getPrefCustomerCountry().isBlank()) {
+            if (countryField != null && u.getPrefCustomerCountry() != null && !u.getPrefCustomerCountry().isBlank()) {
                 countryField.setText(u.getPrefCustomerCountry());
             }
             if (u.getPrefShippingAddress() != null && !u.getPrefShippingAddress().isBlank()) {
@@ -70,6 +78,7 @@ public class OrdersController extends BaseScreenController {
         }
         renderOrderItems();
         renderMyOrders();
+        refreshDraftBanner();
     }
 
     private void renderMyOrders() {
@@ -211,7 +220,7 @@ public class OrdersController extends BaseScreenController {
             Button removeBtn = new Button(LanguageManager.isArabic() ? "حذف" : "Remove");
             removeBtn.setStyle("-fx-background-color: #fee2e2; -fx-text-fill: #dc2626; -fx-font-size: 12px;");
             removeBtn.setOnAction(e -> {
-                orderFacade.removeFromCart(p);
+                orderFacade.removeOneUnitFromCart(p.getId());
                 renderOrderItems();
             });
 
@@ -264,7 +273,7 @@ public class OrdersController extends BaseScreenController {
             return;
         }
 
-        String country = countryField.getText() != null ? countryField.getText().trim() : "";
+        String country = countryField != null && countryField.getText() != null ? countryField.getText().trim() : "";
         if (country.isEmpty()) {
             showAlert(LanguageManager.get("Validation Error"), LanguageManager.get("Country is required"));
             return;
@@ -310,11 +319,84 @@ public class OrdersController extends BaseScreenController {
 
         renderOrderItems();
         renderMyOrders();
+        refreshDraftBanner();
+    }
+
+    private void refreshDraftBanner() {
+        if (draftBanner == null) {
+            return;
+        }
+        boolean has = orderFacade != null && orderFacade.hasOrderDraft();
+        draftBanner.setVisible(has);
+        draftBanner.setManaged(has);
+        if (draftBannerText != null && has) {
+            draftBannerText.setText(LanguageManager.isArabic()
+                    ? "لديك مسودة طلب محفوظة (السلة وبيانات العميل)."
+                    : "You have a saved order draft (cart and customer details).");
+        }
+    }
+
+    @FXML
+    private void handleLoadDraft() {
+        if (orderFacade == null) {
+            return;
+        }
+        Optional<MarketerOrderDraft> opt = orderFacade.getOrderDraft();
+        if (!opt.isPresent()) {
+            showAlert(LanguageManager.get("Validation Error"), LanguageManager.get("No saved draft"));
+            return;
+        }
+        if (!orderFacade.getCart().isEmpty()) {
+            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+            confirm.setTitle(LanguageManager.get("Load draft"));
+            confirm.setHeaderText(null);
+            confirm.setContentText(LanguageManager.get("Replace cart with draft"));
+            if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
+                return;
+            }
+        }
+        MarketerOrderDraft d = opt.get();
+        orderFacade.applyOrderDraft(d);
+        if (d.getCustomerName() != null) {
+            customerNameField.setText(d.getCustomerName());
+        }
+        if (d.getCustomerPhone() != null) {
+            phoneField.setText(d.getCustomerPhone());
+        }
+        if (countryField != null && d.getCustomerCountry() != null) {
+            countryField.setText(d.getCustomerCountry());
+        }
+        if (d.getShippingAddress() != null) {
+            addressArea.setText(d.getShippingAddress());
+        }
+        renderOrderItems();
+        refreshDraftBanner();
+        showAlert(Alert.AlertType.INFORMATION, LanguageManager.get("Load draft"), LanguageManager.get("Draft loaded"));
+    }
+
+    @FXML
+    private void handleDiscardDraft() {
+        if (orderFacade == null) {
+            return;
+        }
+        orderFacade.discardOrderDraft();
+        refreshDraftBanner();
+        showAlert(Alert.AlertType.INFORMATION, LanguageManager.get("Remove draft"), LanguageManager.get("Draft discarded"));
     }
 
     @FXML
     private void handleSaveDraft() {
-        showAlert(Alert.AlertType.INFORMATION, LanguageManager.get("Draft Saved"), LanguageManager.isArabic() ? "تم حفظ الطلب كمسودة." : "Order has been saved as draft.");
+        if (orderFacade == null || orderFacade.getCurrentUser() == null) {
+            showAlert(LanguageManager.get("Validation Error"), LanguageManager.isArabic() ? "يجب تسجيل الدخول." : "You must be signed in.");
+            return;
+        }
+        String nm = customerNameField.getText() != null ? customerNameField.getText().trim() : "";
+        String ph = phoneField.getText() != null ? phoneField.getText().trim() : "";
+        String ctry = countryField != null && countryField.getText() != null ? countryField.getText().trim() : "";
+        String addr = addressArea.getText() != null ? addressArea.getText().trim() : "";
+        orderFacade.saveOrderDraftFromForm(nm, ph, ctry, addr);
+        refreshDraftBanner();
+        showAlert(Alert.AlertType.INFORMATION, LanguageManager.get("Draft saved title"), LanguageManager.get("Draft saved detail"));
     }
 
     @FXML

@@ -4,11 +4,14 @@ import com.supplysync.models.Order;
 import com.supplysync.models.Product;
 import com.supplysync.models.User;
 import com.supplysync.models.Marketer;
+import com.supplysync.models.MarketerOrderDraft;
 import com.supplysync.models.Message;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class InMemoryStorage implements Storage {
     private final List<Order> orders = new ArrayList<>();
@@ -16,6 +19,7 @@ public class InMemoryStorage implements Storage {
     private final List<User> users = new ArrayList<>();
     private final List<Marketer> marketers = new ArrayList<>();
     private final List<Message> messages = new ArrayList<>();
+    private final Map<String, MarketerOrderDraft> marketerDrafts = new ConcurrentHashMap<>();
 
     public InMemoryStorage() {
         // Seed Products from 212.txt
@@ -118,5 +122,27 @@ public class InMemoryStorage implements Storage {
     @Override
     public List<User> findAllUsers() {
         return new ArrayList<>(users);
+    }
+
+    @Override
+    public void saveMarketerOrderDraft(MarketerOrderDraft draft) {
+        if (draft.getMarketerId() != null) {
+            marketerDrafts.put(draft.getMarketerId(), draft);
+        }
+    }
+
+    @Override
+    public Optional<MarketerOrderDraft> findMarketerOrderDraft(String marketerId) {
+        if (marketerId == null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(marketerDrafts.get(marketerId));
+    }
+
+    @Override
+    public void deleteMarketerOrderDraft(String marketerId) {
+        if (marketerId != null) {
+            marketerDrafts.remove(marketerId);
+        }
     }
 }

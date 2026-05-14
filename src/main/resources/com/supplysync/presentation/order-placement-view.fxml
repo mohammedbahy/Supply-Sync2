@@ -52,6 +52,13 @@
                 <Label text="👤" styleClass="top-icon"/>
             </HBox>
 
+            <HBox fx:id="draftBanner" spacing="10.0" alignment="CENTER_LEFT" visible="false" managed="false" style="-fx-padding:10; -fx-background-color:#eff6ff; -fx-background-radius:8;">
+                <Label fx:id="draftBannerText" wrapText="true" style="-fx-text-fill:#1e40af;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="Load draft" onAction="#handleLoadDraft" styleClass="outline-btn"/>
+                <Button text="Discard" onAction="#handleDiscardDraft" styleClass="outline-btn"/>
+            </HBox>
+
             <HBox alignment="CENTER_LEFT">
                 <VBox spacing="2.0">
                     <Label text="Order Placement" styleClass="page-title"/>

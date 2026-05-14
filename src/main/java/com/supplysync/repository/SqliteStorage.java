@@ -1,6 +1,7 @@
 package com.supplysync.repository;
 
 import com.supplysync.models.Marketer;
+import com.supplysync.models.MarketerOrderDraft;
 import com.supplysync.models.Message;
 import com.supplysync.models.Order;
 import com.supplysync.models.Product;
@@ -93,6 +94,14 @@ public class SqliteStorage implements Storage {
                     + "status TEXT NOT NULL,"
                     + "created_at TEXT NOT NULL,"
                     + "is_read INTEGER NOT NULL DEFAULT 0)");
+            s.execute("CREATE TABLE IF NOT EXISTS marketer_order_drafts ("
+                    + "marketer_id TEXT PRIMARY KEY,"
+                    + "customer_name TEXT,"
+                    + "customer_phone TEXT,"
+                    + "customer_country TEXT,"
+                    + "shipping_address TEXT,"
+                    + "cart_lines TEXT NOT NULL,"
+                    + "updated_at TEXT NOT NULL)");
             ensureOrdersPlacedAtColumn(c);
             ensureOrdersCustomerCountryColumn(c);
             ensureUserOrderPrefsColumns(c);
@@ -572,5 +581,98 @@ public class SqliteStorage implements Storage {
         }
         m.setRead(rs.getInt("is_read") != 0);
         return m;
+    }
+
+    @Override
+    public void saveMarketerOrderDraft(MarketerOrderDraft draft) {
+        try (Connection c = connect();
+             PreparedStatement ps = c.prepareStatement(
+                     "INSERT OR REPLACE INTO marketer_order_drafts (marketer_id,customer_name,customer_phone,customer_country,shipping_address,cart_lines,updated_at) VALUES (?,?,?,?,?,?,?)")) {
+            ps.setString(1, draft.getMarketerId());
+            ps.setString(2, nz(draft.getCustomerName()));
+            ps.setString(3, nz(draft.getCustomerPhone()));
+            ps.setString(4, nz(draft.getCustomerCountry()));
+            ps.setString(5, nz(draft.getShippingAddress()));
+            ps.setString(6, serializeCartLines(draft));
+            ps.setString(7, LocalDateTime.now().format(ISO_DT));
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new IllegalStateException("saveMarketerOrderDraft failed", e);
+        }
+    }
+
+    private static String serializeCartLines(MarketerOrderDraft draft) {
+        StringBuilder sb = new StringBuilder();
+        for (MarketerOrderDraft.DraftCartLine line : draft.getLines()) {
+            if (sb.length() > 0) {
+                sb.append('\n');
+            }
+            sb.append(line.getProductId()).append(':').append(line.getQuantity());
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public Optional<MarketerOrderDraft> findMarketerOrderDraft(String marketerId) {
+        if (marketerId == null) {
+            return Optional.empty();
+        }
+        try (Connection c = connect();
+             PreparedStatement ps = c.prepareStatement(
+                     "SELECT marketer_id,customer_name,customer_phone,customer_country,shipping_address,cart_lines FROM marketer_order_drafts WHERE marketer_id=?")) {
+            ps.setString(1, marketerId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) {
+                    return Optional.empty();
+                }
+                return Optional.of(readMarketerOrderDraftRow(rs));
+            }
+        } catch (SQLException e) {
+            throw new IllegalStateException("findMarketerOrderDraft failed", e);
+        }
+    }
+
+    private static MarketerOrderDraft readMarketerOrderDraftRow(ResultSet rs) throws SQLException {
+        MarketerOrderDraft d = new MarketerOrderDraft();
+        d.setMarketerId(rs.getString("marketer_id"));
+        d.setCustomerName(rs.getString("customer_name"));
+        d.setCustomerPhone(rs.getString("customer_phone"));
+        d.setCustomerCountry(rs.getString("customer_country"));
+        d.setShippingAddress(rs.getString("shipping_address"));
+        String cl = rs.getString("cart_lines");
+        if (cl != null && !cl.isEmpty()) {
+            for (String row : cl.split("\n")) {
+                String trimmed = row.trim();
+                if (trimmed.isEmpty()) {
+                    continue;
+                }
+                int c = trimmed.lastIndexOf(':');
+                if (c <= 0 || c == trimmed.length() - 1) {
+                    continue;
+                }
+                String pid = trimmed.substring(0, c).trim();
+                try {
+                    int qty = Integer.parseInt(trimmed.substring(c + 1).trim());
+                    d.addLine(pid, qty);
+                } catch (NumberFormatException ignored) {
+                    // skip bad line
+                }
+            }
+        }
+        return d;
+    }
+
+    @Override
+    public void deleteMarketerOrderDraft(String marketerId) {
+        if (marketerId == null) {
+            return;
+        }
+        try (Connection c = connect();
+             PreparedStatement ps = c.prepareStatement("DELETE FROM marketer_order_drafts WHERE marketer_id=?")) {
+            ps.setString(1, marketerId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new IllegalStateException("deleteMarketerOrderDraft failed", e);
+        }
     }
 }

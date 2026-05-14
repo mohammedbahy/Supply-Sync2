@@ -11,11 +11,14 @@ import com.supplysync.models.User;
 import com.supplysync.models.Message;
 import com.supplysync.models.AdminDashboardStats;
 import com.supplysync.models.MarketerCancelResult;
+import com.supplysync.models.MarketerOrderDraft;
 import com.supplysync.models.OrderStatuses;
 
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.time.LocalDateTime;
@@ -53,6 +56,10 @@ public class OrderFacade {
         deliveryService.schedule(order);
         notificationService.notifyOrderUpdate(order);
         clearCart();
+        User u = getCurrentUser();
+        if (u != null) {
+            storage.deleteMarketerOrderDraft(u.getId());
+        }
     }
 
     public List<Product> getCatalog() {
@@ -88,8 +95,32 @@ public class OrderFacade {
     }
 
     // Cart Management
-    public void addToCart(Product product) {
+    public int countProductInCart(String productId) {
+        if (productId == null) {
+            return 0;
+        }
+        return (int) cart.stream().filter(p -> productId.equals(p.getId())).count();
+    }
+
+    /**
+     * How many more units of this product can be added given DB stock and current cart.
+     */
+    public int availableUnitsToAddFromCatalog(Product product) {
+        if (product == null) {
+            return 0;
+        }
+        return Math.max(0, product.getQuantity() - countProductInCart(product.getId()));
+    }
+
+    public boolean addToCart(Product product) {
+        if (product == null) {
+            return false;
+        }
+        if (availableUnitsToAddFromCatalog(product) <= 0) {
+            return false;
+        }
         cart.add(product);
+        return true;
     }
 
     public List<Product> getCart() {
@@ -99,9 +130,21 @@ public class OrderFacade {
     public void clearCart() {
         cart.clear();
     }
-    
-    public void removeFromCart(Product product) {
-        cart.removeIf(p -> p.getId().equals(product.getId()));
+
+    /**
+     * Removes a single cart line matching the product id (one unit).
+     */
+    public boolean removeOneUnitFromCart(String productId) {
+        if (productId == null) {
+            return false;
+        }
+        for (int i = 0; i < cart.size(); i++) {
+            if (productId.equals(cart.get(i).getId())) {
+                cart.remove(i);
+                return true;
+            }
+        }
+        return false;
     }
 
     public List<com.supplysync.models.Marketer> getAllMarketers() {
@@ -177,6 +220,63 @@ public class OrderFacade {
         u.setPrefCustomerCountry(country != null ? country.trim() : "");
         u.setPrefShippingAddress(address != null ? address.trim() : "");
         storage.saveUser(u);
+    }
+
+    public void saveOrderDraftFromForm(String customerName, String phone, String country, String address) {
+        User u = getCurrentUser();
+        if (u == null || u.getId() == null) {
+            return;
+        }
+        MarketerOrderDraft d = new MarketerOrderDraft();
+        d.setMarketerId(u.getId());
+        d.setCustomerName(customerName != null ? customerName.trim() : "");
+        d.setCustomerPhone(phone != null ? phone.trim() : "");
+        d.setCustomerCountry(country != null ? country.trim() : "");
+        d.setShippingAddress(address != null ? address.trim() : "");
+        Map<String, Integer> counts = new LinkedHashMap<>();
+        for (Product p : cart) {
+            counts.merge(p.getId(), 1, Integer::sum);
+        }
+        for (Map.Entry<String, Integer> e : counts.entrySet()) {
+            d.addLine(e.getKey(), e.getValue());
+        }
+        storage.saveMarketerOrderDraft(d);
+    }
+
+    public boolean hasOrderDraft() {
+        User u = getCurrentUser();
+        return u != null && u.getId() != null && storage.findMarketerOrderDraft(u.getId()).isPresent();
+    }
+
+    public Optional<MarketerOrderDraft> getOrderDraft() {
+        User u = getCurrentUser();
+        if (u == null || u.getId() == null) {
+            return Optional.empty();
+        }
+        return storage.findMarketerOrderDraft(u.getId());
+    }
+
+    public void discardOrderDraft() {
+        User u = getCurrentUser();
+        if (u != null && u.getId() != null) {
+            storage.deleteMarketerOrderDraft(u.getId());
+        }
+    }
+
+    public void applyOrderDraft(MarketerOrderDraft draft) {
+        clearCart();
+        List<Product> catalog = getCatalog();
+        for (MarketerOrderDraft.DraftCartLine line : draft.getLines()) {
+            Product ref = catalog.stream().filter(p -> p.getId().equals(line.getProductId())).findFirst().orElse(null);
+            if (ref == null) {
+                continue;
+            }
+            for (int i = 0; i < line.getQuantity(); i++) {
+                if (!addToCart(ref)) {
+                    break;
+                }
+            }
+        }
     }
 
     public void restoreOrderInventory(Order order) {

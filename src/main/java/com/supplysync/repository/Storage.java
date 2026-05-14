@@ -3,6 +3,7 @@ package com.supplysync.repository;
 import com.supplysync.models.Order;
 import com.supplysync.models.Product;
 import com.supplysync.models.User;
+import com.supplysync.models.MarketerOrderDraft;
 import com.supplysync.models.Message;
 import com.supplysync.models.Marketer;
 
@@ -28,4 +29,8 @@ public interface Storage {
     void saveMessage(Message message);
     List<Message> findMessagesByRecipient(String recipientEmail);
     List<Message> findAllMessages();
+
+    void saveMarketerOrderDraft(MarketerOrderDraft draft);
+    Optional<MarketerOrderDraft> findMarketerOrderDraft(String marketerId);
+    void deleteMarketerOrderDraft(String marketerId);
 }

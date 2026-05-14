@@ -52,7 +52,7 @@
             <HBox alignment="CENTER_LEFT">
                 <VBox spacing="2.0">
                     <Label text="Product Catalog" styleClass="page-title"/>
-                    <Label text="Browse and manage wholesale inventory for promotional campaigns." styleClass="page-subtitle"/>
+                    <Label text="Browse wholesale inventory and add items to your order." styleClass="page-subtitle"/>
                 </VBox>
             </HBox>
 

@@ -9,7 +9,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import java.io.IOException;
+
 import java.util.List;
 
 public class ProductCatalogController extends BaseScreenController {
@@ -103,36 +103,57 @@ public class ProductCatalogController extends BaseScreenController {
         priceLabel.getStyleClass().add("price");
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        Label unitsLabel = new Label(product.getQuantity() + " " + LanguageManager.get("Units"));
+        int warehouse = product.getQuantity();
+        int remaining = orderFacade.availableUnitsToAddFromCatalog(product);
+        Label unitsLabel = new Label(remaining + "/" + warehouse + " " + LanguageManager.get("Units"));
         unitsLabel.getStyleClass().add("units");
         priceBox.getChildren().addAll(priceLabel, spacer, unitsLabel);
 
         HBox actions = new HBox(6);
         // "View Details" button removed as requested in 212.txt
-        
-        javafx.scene.control.Spinner<Integer> qtySpinner = new javafx.scene.control.Spinner<>(1, Math.max(1, product.getQuantity()), 1);
+
+        javafx.scene.control.Spinner<Integer> qtySpinner = new javafx.scene.control.Spinner<>(0, Math.max(0, remaining), Math.min(1, Math.max(0, remaining)));
         qtySpinner.setPrefWidth(70);
         qtySpinner.getStyleClass().add("qty-spinner");
+        qtySpinner.valueProperty().addListener((obs, o, n) -> {
+            int max = orderFacade.availableUnitsToAddFromCatalog(product);
+            if (n != null && n > max) {
+                qtySpinner.getValueFactory().setValue(max);
+            }
+        });
 
-        Button addBtn = new Button(product.getQuantity() > 0 ? LanguageManager.get("ADD TO ORDER") : LanguageManager.get("OUT OF STOCK"));
+        Button addBtn = new Button(remaining > 0 ? LanguageManager.get("ADD TO ORDER") : LanguageManager.get("OUT OF STOCK"));
         addBtn.getStyleClass().add("mini-btn");
-        if (product.getQuantity() > 0) {
+        if (remaining > 0) {
             addBtn.getStyleClass().add("primary-mini");
             addBtn.setOnAction(e -> {
                 int requestedQty = qtySpinner.getValue();
-                for (int i = 0; i < requestedQty; i++) {
-                    orderFacade.addToCart(product);
+                int maxAdd = orderFacade.availableUnitsToAddFromCatalog(product);
+                if (requestedQty <= 0) {
+                    return;
                 }
-                
+                if (requestedQty > maxAdd) {
+                    javafx.scene.control.Alert warn = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.WARNING);
+                    warn.setHeaderText(null);
+                    warn.setTitle(LanguageManager.get("Validation Error"));
+                    warn.setContentText(LanguageManager.get("Stock limit"));
+                    warn.showAndWait();
+                    return;
+                }
+                for (int i = 0; i < requestedQty; i++) {
+                    if (!orderFacade.addToCart(product)) {
+                        break;
+                    }
+                }
+
                 javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
                 alert.setTitle(LanguageManager.get("Success"));
                 alert.setHeaderText(null);
-                alert.setContentText(LanguageManager.isArabic() ? 
-                    "تمت إضافة " + requestedQty + " من " + product.getName() + " إلى طلبك." :
-                    "Added " + requestedQty + " of " + product.getName() + " to your order.");
+                alert.setContentText(LanguageManager.isArabic() ?
+                        "تمت إضافة " + requestedQty + " من " + product.getName() + " إلى طلبك." :
+                        "Added " + requestedQty + " of " + product.getName() + " to your order.");
                 alert.showAndWait();
-                
-                // Stay on the same page as requested
+
                 renderProducts();
             });
         } else {

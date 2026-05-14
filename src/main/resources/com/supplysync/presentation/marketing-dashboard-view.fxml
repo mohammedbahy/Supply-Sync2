@@ -59,8 +59,12 @@
                     <Label text="Track your distribution metrics and commission growth." styleClass="page-subtitle"/>
                 </VBox>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button text="Export Report" styleClass="outline-btn"/>
-                <Button text="New Campaign" styleClass="primary-btn"/>
+            </HBox>
+
+            <HBox fx:id="draftHintBox" spacing="12.0" alignment="CENTER_LEFT" visible="false" managed="false" style="-fx-padding:10; -fx-background-color:#eff6ff; -fx-background-radius:8;">
+                <Label fx:id="draftHintLabel" wrapText="true" style="-fx-text-fill:#1e40af;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="My Orders" onAction="#openMyOrders" styleClass="outline-btn"/>
             </HBox>
 
             <HBox spacing="12.0">
@@ -91,7 +95,7 @@
                     <HBox>
                         <Label text="Recent Orders" styleClass="panel-title"/>
                         <Region HBox.hgrow="ALWAYS"/>
-                        <Button text="View All" styleClass="link-btn"/>
+                        <Button text="View All" onAction="#openMyOrders" styleClass="link-btn"/>
                     </HBox>
                     <Separator/>
                     <HBox styleClass="table-head">
