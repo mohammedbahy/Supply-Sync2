@@ -167,6 +167,18 @@ public class OrderFacade {
                 && o.getCustomerName().trim().equalsIgnoreCase(u.getName().trim());
     }
 
+    public void persistCheckoutContactForCurrentUser(String customerName, String phone, String country, String address) {
+        User u = getCurrentUser();
+        if (u == null) {
+            return;
+        }
+        u.setPrefCustomerName(customerName != null ? customerName.trim() : "");
+        u.setPrefCustomerPhone(phone != null ? phone.trim() : "");
+        u.setPrefCustomerCountry(country != null ? country.trim() : "");
+        u.setPrefShippingAddress(address != null ? address.trim() : "");
+        storage.saveUser(u);
+    }
+
     public void restoreOrderInventory(Order order) {
         inventoryService.restoreInventory(order);
     }

@@ -86,9 +86,13 @@
                             </VBox>
                             <VBox HBox.hgrow="ALWAYS" spacing="6.0">
                                 <Label text="Contact Phone" styleClass="small-label"/>
-                                <TextField fx:id="phoneField" promptText="Enter 11-digit phone number"/>
+                                <TextField fx:id="phoneField" promptText="At least 11 digits"/>
                             </VBox>
                         </HBox>
+                        <VBox spacing="6.0">
+                            <Label text="Country" styleClass="small-label"/>
+                            <TextField fx:id="countryField" promptText="Country"/>
+                        </VBox>
                         <VBox spacing="6.0">
                             <Label text="Shipping Address" styleClass="small-label"/>
                             <TextArea fx:id="addressArea" prefRowCount="2" promptText="Enter full shipping address"/>

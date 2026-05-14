@@ -29,6 +29,10 @@ public class LanguageManager {
         add("Password", "كلمة المرور");
         add("Show password", "إظهار كلمة المرور");
         add("Show passwords", "إظهار كلمات المرور");
+        add("Phone must be at least 11 digits", "رقم الهاتف يجب أن يحتوي على 11 رقماً على الأقل.");
+        add("Country is required", "الدولة مطلوبة.");
+        add("Customer name is required", "اسم العميل مطلوب.");
+        add("Validation Error", "خطأ في التحقق");
         add("Sign In", "تسجيل الدخول");
         add("Create account", "إنشاء حساب");
 

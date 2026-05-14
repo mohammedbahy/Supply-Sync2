@@ -94,6 +94,33 @@ public class SqliteStorage implements Storage {
                     + "created_at TEXT NOT NULL,"
                     + "is_read INTEGER NOT NULL DEFAULT 0)");
             ensureOrdersPlacedAtColumn(c);
+            ensureOrdersCustomerCountryColumn(c);
+            ensureUserOrderPrefsColumns(c);
+        }
+    }
+
+    private void ensureOrdersCustomerCountryColumn(Connection c) throws SQLException {
+        try (Statement st = c.createStatement()) {
+            st.execute("ALTER TABLE orders ADD COLUMN customer_country TEXT");
+        } catch (SQLException e) {
+            String msg = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
+            if (!msg.contains("duplicate column") && !msg.contains("already exists")) {
+                throw e;
+            }
+        }
+    }
+
+    private void ensureUserOrderPrefsColumns(Connection c) throws SQLException {
+        String[] cols = {"pref_customer_name", "pref_customer_phone", "pref_customer_country", "pref_shipping_address"};
+        for (String col : cols) {
+            try (Statement st = c.createStatement()) {
+                st.execute("ALTER TABLE users ADD COLUMN " + col + " TEXT");
+            } catch (SQLException e) {
+                String msg = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
+                if (!msg.contains("duplicate column") && !msg.contains("already exists")) {
+                    throw e;
+                }
+            }
         }
     }
 
@@ -135,18 +162,26 @@ public class SqliteStorage implements Storage {
                 ps.executeBatch();
             }
             try (PreparedStatement ps = c.prepareStatement(
-                    "INSERT OR REPLACE INTO users (id,email,password,name,role) VALUES (?,?,?,?,?)")) {
+                    "INSERT OR REPLACE INTO users (id,email,password,name,role,pref_customer_name,pref_customer_phone,pref_customer_country,pref_shipping_address) VALUES (?,?,?,?,?,?,?,?,?)")) {
                 ps.setString(1, "1");
                 ps.setString(2, "admin@gmail.com");
                 ps.setString(3, "Admin@123!");
                 ps.setString(4, "Admin User");
                 ps.setString(5, "ADMIN");
+                ps.setString(6, "");
+                ps.setString(7, "");
+                ps.setString(8, "");
+                ps.setString(9, "");
                 ps.addBatch();
                 ps.setString(1, "2");
                 ps.setString(2, "user@gmail.com");
                 ps.setString(3, "User@123");
                 ps.setString(4, "Marcus Miller");
                 ps.setString(5, "MARKETER");
+                ps.setString(6, "");
+                ps.setString(7, "");
+                ps.setString(8, "");
+                ps.setString(9, "");
                 ps.addBatch();
                 ps.executeBatch();
             }
@@ -170,12 +205,22 @@ public class SqliteStorage implements Storage {
     }
 
     private static User readUser(ResultSet rs) throws SQLException {
-        return new User(
+        User u = new User(
                 rs.getString("id"),
                 rs.getString("email"),
                 rs.getString("password"),
                 rs.getString("name"),
                 rs.getString("role"));
+        u.setPrefCustomerName(nullToEmpty(rs, "pref_customer_name"));
+        u.setPrefCustomerPhone(nullToEmpty(rs, "pref_customer_phone"));
+        u.setPrefCustomerCountry(nullToEmpty(rs, "pref_customer_country"));
+        u.setPrefShippingAddress(nullToEmpty(rs, "pref_shipping_address"));
+        return u;
+    }
+
+    private static String nullToEmpty(ResultSet rs, String column) throws SQLException {
+        String v = rs.getString(column);
+        return v != null ? v : "";
     }
 
     private static Product readProduct(ResultSet rs) throws SQLException {
@@ -210,8 +255,8 @@ public class SqliteStorage implements Storage {
                     }
                 }
                 try (PreparedStatement ins = c.prepareStatement(
-                        "INSERT OR REPLACE INTO orders (id,marketer_id,customer_name,customer_phone,customer_address,"
-                                + "status,total_amount,commission,order_date,placed_at) VALUES (?,?,?,?,?,?,?,?,?,?)")) {
+                        "INSERT OR REPLACE INTO orders (id,marketer_id,customer_name,customer_phone,customer_country,customer_address,"
+                                + "status,total_amount,commission,order_date,placed_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)")) {
                     ins.setString(1, order.getId());
                     if (order.getMarketer() != null) {
                         ins.setString(2, order.getMarketer().getId());
@@ -220,15 +265,16 @@ public class SqliteStorage implements Storage {
                     }
                     ins.setString(3, order.getCustomerName());
                     ins.setString(4, order.getCustomerPhone());
-                    ins.setString(5, order.getCustomerAddress());
-                    ins.setString(6, order.getStatus());
-                    ins.setDouble(7, order.getTotalAmount());
-                    ins.setDouble(8, order.getCommission());
-                    ins.setString(9, order.getDate() != null ? order.getDate().toString() : LocalDate.now().toString());
+                    ins.setString(5, order.getCustomerCountry() != null ? order.getCustomerCountry() : "");
+                    ins.setString(6, order.getCustomerAddress());
+                    ins.setString(7, order.getStatus());
+                    ins.setDouble(8, order.getTotalAmount());
+                    ins.setDouble(9, order.getCommission());
+                    ins.setString(10, order.getDate() != null ? order.getDate().toString() : LocalDate.now().toString());
                     if (order.getPlacedAt() != null) {
-                        ins.setString(10, order.getPlacedAt().format(ISO_DT));
+                        ins.setString(11, order.getPlacedAt().format(ISO_DT));
                     } else {
-                        ins.setNull(10, Types.VARCHAR);
+                        ins.setNull(11, Types.VARCHAR);
                     }
                     ins.executeUpdate();
                 }
@@ -267,7 +313,7 @@ public class SqliteStorage implements Storage {
         try (Connection c = connect();
              Statement s = c.createStatement();
              ResultSet rs = s.executeQuery(
-                     "SELECT o.id,o.marketer_id,o.customer_name,o.customer_phone,o.customer_address,"
+                     "SELECT o.id,o.marketer_id,o.customer_name,o.customer_phone,o.customer_country,o.customer_address,"
                              + "o.status,o.total_amount,o.commission,o.order_date,o.placed_at,m.name AS marketer_name "
                              + "FROM orders o LEFT JOIN marketers m ON o.marketer_id = m.id "
                              + "ORDER BY o.order_date DESC, o.id DESC")) {
@@ -281,6 +327,7 @@ public class SqliteStorage implements Storage {
                 }
                 order.setCustomerName(rs.getString("customer_name"));
                 order.setCustomerPhone(rs.getString("customer_phone"));
+                order.setCustomerCountry(rs.getString("customer_country"));
                 order.setCustomerAddress(rs.getString("customer_address"));
                 String rawStatus = rs.getString("status");
                 if (OrderStatuses.APPROVED.equals(rawStatus)) {
@@ -377,16 +424,24 @@ public class SqliteStorage implements Storage {
     public void saveUser(User user) {
         try (Connection c = connect();
              PreparedStatement ps = c.prepareStatement(
-                     "INSERT OR REPLACE INTO users (id,email,password,name,role) VALUES (?,?,?,?,?)")) {
+                     "INSERT OR REPLACE INTO users (id,email,password,name,role,pref_customer_name,pref_customer_phone,pref_customer_country,pref_shipping_address) VALUES (?,?,?,?,?,?,?,?,?)")) {
             ps.setString(1, user.getId());
             ps.setString(2, user.getEmail());
             ps.setString(3, user.getPassword());
             ps.setString(4, user.getName());
             ps.setString(5, user.getRole());
+            ps.setString(6, nz(user.getPrefCustomerName()));
+            ps.setString(7, nz(user.getPrefCustomerPhone()));
+            ps.setString(8, nz(user.getPrefCustomerCountry()));
+            ps.setString(9, nz(user.getPrefShippingAddress()));
             ps.executeUpdate();
         } catch (SQLException e) {
             throw new IllegalStateException("saveUser failed", e);
         }
+    }
+
+    private static String nz(String s) {
+        return s != null ? s : "";
     }
 
     @Override

@@ -11,6 +11,7 @@ public class Order {
     private final List<Product> products = new ArrayList<>();
     private String customerName;
     private String customerPhone;
+    private String customerCountry;
     private String customerAddress;
     private String status;
     private double totalAmount;
@@ -44,6 +45,9 @@ public class Order {
 
     public String getCustomerPhone() { return customerPhone; }
     public void setCustomerPhone(String customerPhone) { this.customerPhone = customerPhone; }
+
+    public String getCustomerCountry() { return customerCountry; }
+    public void setCustomerCountry(String customerCountry) { this.customerCountry = customerCountry; }
 
     public String getCustomerAddress() { return customerAddress; }
     public void setCustomerAddress(String customerAddress) { this.customerAddress = customerAddress; }
