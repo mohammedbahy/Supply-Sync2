@@ -3,11 +3,9 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Priority?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
@@ -27,7 +25,6 @@
                 <Button text="Reports" onAction="#openReports" styleClass="nav-btn nav-btn-active"/>
             </VBox>
             <Region VBox.vgrow="ALWAYS"/>
-            <Button text="Support" onAction="#openSupport" styleClass="secondary-btn"/>
             <Button text="Sign Out" onAction="#logout" styleClass="secondary-btn"/>
         </VBox>
     </left>
@@ -44,27 +41,14 @@
                 <Label text="👤" styleClass="top-icon"/>
             </HBox>
 
-            <HBox alignment="CENTER_LEFT">
-                <VBox spacing="2.0">
-                    <Label fx:id="pageTitle" text="System Notifications" styleClass="page-title"/>
-                    <Label text="Stay updated with inventory alerts, order statuses, and team updates." styleClass="page-subtitle"/>
-                </VBox>
-                <Region HBox.hgrow="ALWAYS"/>
-                <Button fx:id="markAllReadBtn" text="Mark all as read" onAction="#handleMarkAllRead" styleClass="outline-btn"/>
-            </HBox>
-
-            <VBox spacing="10.0">
-                <Label text="TODAY" styleClass="section-header"/>
-                <VBox fx:id="todayContainer" spacing="12.0">
-                    <!-- Dynamic notifications -->
-                </VBox>
+            <VBox spacing="6.0">
+                <Label fx:id="pageTitle" text="Reports" styleClass="page-title"/>
+                <Label fx:id="pageSubtitle" text="Daily summary for today." styleClass="page-subtitle"/>
+                <Label fx:id="reportDateLabel" text="" styleClass="section-header"/>
             </VBox>
 
-            <VBox spacing="10.0">
-                <Label text="YESTERDAY" styleClass="section-header"/>
-                <VBox fx:id="yesterdayContainer" spacing="12.0">
-                    <!-- Dynamic notifications -->
-                </VBox>
+            <VBox spacing="12.0">
+                <VBox fx:id="reportsContainer" spacing="12.0"/>
             </VBox>
         </VBox>
         </ScrollPane>

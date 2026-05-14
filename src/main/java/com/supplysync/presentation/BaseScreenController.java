@@ -54,7 +54,6 @@ public abstract class BaseScreenController {
     @FXML protected void openOrders(Event event) throws IOException { ScreenNavigator.open(event, "/com/supplysync/presentation/orders-management-view.fxml", "SupplySync Orders Management"); }
     @FXML protected void openMarketers(Event event) throws IOException { ScreenNavigator.open(event, "/com/supplysync/presentation/marketers-view.fxml", "SupplySync Marketers"); }
     @FXML protected void openReports(Event event) throws IOException { ScreenNavigator.open(event, "/com/supplysync/presentation/notifications-view.fxml", "SupplySync Reports"); }
-    @FXML protected void openSupport(Event event) throws IOException { ScreenNavigator.open(event, "/com/supplysync/presentation/notifications-view.fxml", "SupplySync Support"); }
     @FXML protected void openMarketingDashboard(Event event) throws IOException { ScreenNavigator.open(event, "/com/supplysync/presentation/marketing-dashboard-view.fxml", "SupplySync Marketing Dashboard"); }
     @FXML protected void openProductCatalog(Event event) throws IOException { ScreenNavigator.open(event, "/com/supplysync/presentation/product-catalog-view.fxml", "SupplySync Product Catalog"); }
     @FXML protected void openMyOrders(Event event) throws IOException { ScreenNavigator.open(event, "/com/supplysync/presentation/order-placement-view.fxml", "SupplySync My Orders"); }

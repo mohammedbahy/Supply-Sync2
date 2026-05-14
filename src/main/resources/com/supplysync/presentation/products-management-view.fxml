@@ -25,7 +25,6 @@
                 <Button text="Reports" onAction="#openReports" styleClass="nav-btn"/>
             </VBox>
             <Region VBox.vgrow="ALWAYS"/>
-            <Button text="Support" onAction="#openSupport" styleClass="secondary-btn"/>
             <Button text="Sign Out" onAction="#logout" styleClass="secondary-btn"/>
         </VBox>
     </left>
