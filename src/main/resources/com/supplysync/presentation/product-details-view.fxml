@@ -37,7 +37,6 @@
             <padding><Insets top="10.0" right="20.0" bottom="14.0" left="20.0"/></padding>
 
             <HBox spacing="10.0" alignment="CENTER_LEFT">
-                <Label text="Search inventory, SKU, or category..." styleClass="search-placeholder"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <Label text="🔔" styleClass="top-icon"/>
                 <Label text="❔" styleClass="top-icon"/>

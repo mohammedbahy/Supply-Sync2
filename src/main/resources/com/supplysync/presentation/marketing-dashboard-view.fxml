@@ -4,11 +4,9 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Separator?>
-<?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Priority?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
@@ -43,7 +41,6 @@
             </padding>
 
             <HBox alignment="CENTER_LEFT" spacing="10.0">
-                <TextField fx:id="searchField" promptText="Search operations..." styleClass="search-field" HBox.hgrow="ALWAYS" onMouseClicked="#handleSearch"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <Label text="🔔" styleClass="top-icon" onMouseClicked="#openMessages"/>
                 <Label text="❔" styleClass="top-icon" onMouseClicked="#showHelp"/>

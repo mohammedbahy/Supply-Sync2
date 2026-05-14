@@ -6,7 +6,6 @@ import com.supplysync.models.Product;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
@@ -29,8 +28,6 @@ public class MarketingDashboardController extends BaseScreenController {
     private VBox recentOrdersContainer;
     @FXML
     private VBox topSellingContainer;
-    @FXML
-    private TextField searchField;
     @FXML
     private VBox weeklyTargetPanel;
     @FXML
@@ -159,16 +156,6 @@ public class MarketingDashboardController extends BaseScreenController {
             row.getChildren().addAll(n, meta);
             topSellingContainer.getChildren().add(row);
         }
-    }
-
-    @FXML
-    private void handleSearch(javafx.event.Event event) {
-        String query = searchField != null ? searchField.getText() : "";
-        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
-        alert.setTitle("Search Operations");
-        alert.setHeaderText("Available Operations to Search:");
-        alert.setContentText("1. Order ID\n2. Customer Name\n3. Product Name\n4. Category\n\nCurrent filter: " + query);
-        alert.showAndWait();
     }
 
     @FXML

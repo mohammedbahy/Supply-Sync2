@@ -40,7 +40,6 @@
             </padding>
 
             <HBox spacing="10.0" alignment="CENTER_LEFT">
-                <TextField fx:id="orderSearchField" promptText="Search orders, products, or customers..." styleClass="search-field" HBox.hgrow="ALWAYS" onAction="#handleSearchOrder"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <Label text="❔" styleClass="top-icon" onMouseClicked="#showHelp"/>
                 <VBox>
@@ -62,12 +61,6 @@
                             <Label text="🧾"/>
                             <Label text="Product Selection" styleClass="panel-title"/>
                         </HBox>
-                        <Label text="Search Catalog" styleClass="small-label"/>
-                        <HBox spacing="8.0">
-                            <TextField promptText="Start typing SKU or product name..." HBox.hgrow="ALWAYS"/>
-                            <Button text="Filter" styleClass="small-btn"/>
-                        </HBox>
-
                         <VBox fx:id="orderItemsContainer" spacing="10.0">
                             <!-- Dynamic items -->
                         </VBox>

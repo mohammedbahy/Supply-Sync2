@@ -48,8 +48,6 @@ public class OrdersController extends BaseScreenController {
     @FXML
     private Label totalLabel;
     @FXML
-    private TextField orderSearchField;
-    @FXML
     private Label userNameLabel;
     @FXML
     private HBox draftBanner;
@@ -397,11 +395,6 @@ public class OrdersController extends BaseScreenController {
         orderFacade.saveOrderDraftFromForm(nm, ph, ctry, addr);
         refreshDraftBanner();
         showAlert(Alert.AlertType.INFORMATION, LanguageManager.get("Draft saved title"), LanguageManager.get("Draft saved detail"));
-    }
-
-    @FXML
-    private void handleSearchOrder() {
-        showAlert(Alert.AlertType.INFORMATION, LanguageManager.get("Search"), LanguageManager.get("Search") + ": " + orderSearchField.getText());
     }
 
     @FXML
