@@ -155,7 +155,7 @@ public class OrdersManagementController extends BaseScreenController {
             return;
         }
 
-        selectedOrder.setStatus(OrderStatuses.IN_TRANSIT);
+        selectedOrder.approve();
         orders().persistOrder(selectedOrder);
 
         com.supplysync.models.Message message = new com.supplysync.models.Message();
@@ -184,7 +184,7 @@ public class OrdersManagementController extends BaseScreenController {
             return;
         }
 
-        selectedOrder.setStatus(OrderStatuses.DELIVERED);
+        selectedOrder.deliver();
         orders().persistOrder(selectedOrder);
 
         com.supplysync.models.Message message = new com.supplysync.models.Message();
@@ -214,7 +214,11 @@ public class OrdersManagementController extends BaseScreenController {
         }
 
         orders().restoreOrderInventory(selectedOrder);
-        selectedOrder.setStatus(OrderStatuses.CANCELLED);
+        try {
+            selectedOrder.cancel();
+        } catch (IllegalStateException ex) {
+            selectedOrder.setStatus(OrderStatuses.CANCELLED);
+        }
         orders().persistOrder(selectedOrder);
 
         com.supplysync.models.Message message = new com.supplysync.models.Message();

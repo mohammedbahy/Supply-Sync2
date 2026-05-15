@@ -1,6 +1,6 @@
 package com.supplysync.presentation;
 
-import com.supplysync.models.Marketer;
+import com.supplysync.patterns.creational.builder.OrderBuilder;
 import com.supplysync.models.MarketerCancelResult;
 import com.supplysync.models.MarketerOrderDraft;
 import com.supplysync.models.Order;
@@ -285,24 +285,28 @@ public class OrdersController extends BaseScreenController {
             return;
         }
 
-        Order order = new Order();
-        order.setId("ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
-        order.setCustomerName(name);
-        order.setCustomerPhone(phone);
-        order.setCustomerCountry(country);
-        order.setCustomerAddress(addressArea.getText().trim());
+        User u = auth().getCurrentUser();
+        if (u == null || u.getId() == null) {
+            showAlert(LanguageManager.get("Validation Error"), LanguageManager.isArabic() ? "يجب تسجيل الدخول." : "You must be signed in.");
+            return;
+        }
+
         String totalText = totalLabel.getText().replace("$", "").trim();
         double total = Double.parseDouble(totalText);
-        order.setTotalAmount(total);
-        order.setCommission(total * 0.05);
-        order.getProducts().addAll(catalog().getCart());
-
         LocalDateTime now = LocalDateTime.now();
-        order.setPlacedAt(now);
-        order.setDate(now.toLocalDate());
-        User u = auth().getCurrentUser();
-        if (u != null) {
-            order.setMarketer(new Marketer(u.getId(), u.getName()));
+
+        Order order = new OrderBuilder()
+                .withId("ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
+                .withMarketerId(u.getId())
+                .withCustomerName(name)
+                .withCustomerPhone(phone)
+                .withShippingAddress(addressArea.getText().trim())
+                .withShippingCity(country)
+                .withProducts(new java.util.ArrayList<>(catalog().getCart()))
+                .withTotalAmount(total)
+                .build();
+        if (order.getMarketer() != null) {
+            order.getMarketer().setName(u.getName());
         }
 
         String timestamp = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));

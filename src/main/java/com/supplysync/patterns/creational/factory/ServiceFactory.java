@@ -1,9 +1,11 @@
 package com.supplysync.patterns.creational.factory;
 
-import com.supplysync.services.delivery.DefaultDeliveryService;
+import com.supplysync.patterns.structural.adapter.DeliveryAdapter;
+import com.supplysync.patterns.structural.adapter.MockDeliveryGateway;
 import com.supplysync.services.delivery.DeliveryService;
 import com.supplysync.services.inventory.DefaultInventoryService;
 import com.supplysync.services.inventory.InventoryService;
+import com.supplysync.patterns.structural.decorator.AuditNotificationDecorator;
 import com.supplysync.services.notification.DefaultNotificationService;
 import com.supplysync.services.notification.NotificationService;
 import com.supplysync.services.order.DefaultOrderService;
@@ -50,11 +52,12 @@ public final class ServiceFactory {
     }
 
     public static DeliveryService createDeliveryService() {
-        return new DefaultDeliveryService();
+        return new DeliveryAdapter(new MockDeliveryGateway());
     }
 
     public static NotificationService createNotificationService() {
-        return new DefaultNotificationService();
+        NotificationService baseNotification = new DefaultNotificationService();
+        return new AuditNotificationDecorator(baseNotification, storage);
     }
     
     public static Storage getStorage() {

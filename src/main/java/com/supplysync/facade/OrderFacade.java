@@ -8,6 +8,10 @@ import com.supplysync.repository.OrderRepository;
 import com.supplysync.services.delivery.DeliveryService;
 import com.supplysync.services.inventory.InventoryService;
 import com.supplysync.services.notification.NotificationService;
+import com.supplysync.patterns.StandardPricingStrategy;
+import com.supplysync.patterns.behavioral.observer.OrderObserver;
+import com.supplysync.patterns.behavioral.observer.OrderSubject;
+import com.supplysync.patterns.behavioral.strategy.PricingStrategy;
 import com.supplysync.services.order.OrderService;
 
 import java.time.LocalDateTime;
@@ -28,6 +32,8 @@ public final class OrderFacade {
     private final AuthFacade auth;
     private final CatalogFacade catalog;
     private final DraftFacade drafts;
+    private final OrderSubject orderSubject = new OrderSubject();
+    private PricingStrategy pricingStrategy = new StandardPricingStrategy();
 
     public OrderFacade(
             OrderService orderService,
@@ -49,13 +55,28 @@ public final class OrderFacade {
         this.drafts = drafts;
     }
 
+    public void setPricingStrategy(PricingStrategy strategy) {
+        this.pricingStrategy = strategy != null ? strategy : new StandardPricingStrategy();
+    }
+
+    public void addOrderObserver(OrderObserver observer) {
+        orderSubject.addObserver(observer);
+    }
+
+    public void removeOrderObserver(OrderObserver observer) {
+        orderSubject.removeObserver(observer);
+    }
+
     public void processOrder(Order order) {
+        double commission = pricingStrategy.calculateCommission(order);
+        order.setCommission(commission);
         orderService.createOrder(order);
         inventoryService.reserveInventory(order);
         deliveryService.schedule(order);
         notificationService.notifyOrderUpdate(order);
         catalog.clearCart();
         drafts.discardDraftForCurrentUser();
+        orderSubject.notifyObservers(order);
     }
 
     public List<Order> getAllOrders() {
@@ -75,6 +96,7 @@ public final class OrderFacade {
 
     public void persistOrder(Order order) {
         orders.saveOrder(order);
+        orderSubject.notifyObservers(order);
     }
 
     public void restoreOrderInventory(Order order) {
@@ -97,13 +119,17 @@ public final class OrderFacade {
         if (!OrderStatuses.PENDING.equals(o.getStatus())) {
             return MarketerCancelResult.INVALID_STATUS;
         }
-        LocalDateTime deadline = o.getEffectivePlacedAt().plusHours(24);
-        if (!LocalDateTime.now().isBefore(deadline)) {
-            return MarketerCancelResult.TOO_LATE;
+        try {
+            o.cancel();
+        } catch (IllegalStateException ex) {
+            if (ex.getMessage() != null && ex.getMessage().contains("24 hours")) {
+                return MarketerCancelResult.TOO_LATE;
+            }
+            return MarketerCancelResult.INVALID_STATUS;
         }
         inventoryService.restoreInventory(o);
-        o.setStatus(OrderStatuses.CANCELLED);
         orders.saveOrder(o);
+        orderSubject.notifyObservers(o);
         return MarketerCancelResult.SUCCESS;
     }
 

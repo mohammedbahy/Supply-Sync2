@@ -4,7 +4,10 @@ import com.supplysync.dashboard.DashboardDataPort;
 import com.supplysync.dashboard.DashboardUiHelper;
 import com.supplysync.facade.ApplicationContext;
 import com.supplysync.models.AdminDashboardStats;
+import com.supplysync.models.Order;
+import com.supplysync.patterns.behavioral.observer.OrderObserver;
 import javafx.animation.KeyFrame;
+import javafx.application.Platform;
 import javafx.animation.Timeline;
 import javafx.event.Event;
 import javafx.fxml.FXML;
@@ -21,8 +24,8 @@ import java.io.IOException;
 /**
  * Admin dashboard: depends on {@link DashboardDataPort} (DIP); UI updates via {@link DashboardUiHelper} (SRP).
  */
-public class DashboardController extends BaseScreenController {
-    private static final Duration DASHBOARD_POLL_INTERVAL = Duration.seconds(12);
+public class DashboardController extends BaseScreenController implements OrderObserver {
+    private static final Duration DASHBOARD_POLL_INTERVAL = Duration.seconds(60);
 
     @FXML
     private Label totalOrdersLabel;
@@ -149,9 +152,21 @@ public class DashboardController extends BaseScreenController {
 
     @Override
     public void setApplicationContext(ApplicationContext app) {
+        if (orders() != null) {
+            orders().removeOrderObserver(this);
+        }
         super.setApplicationContext(app);
         this.dashboardPort = app == null ? null : app.dashboardData();
+        if (orders() != null) {
+            orders().addOrderObserver(this);
+        }
         restartDashboardPolling();
+        updateStatsFromPort();
+    }
+
+    @Override
+    public void onOrderUpdated(Order order) {
+        Platform.runLater(this::updateStatsFromPort);
     }
 
     @Override
