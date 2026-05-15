@@ -8,6 +8,9 @@ import com.supplysync.models.OrderStatuses;
 import com.supplysync.models.User;
 import com.supplysync.services.inventory.InventoryService;
 import com.supplysync.services.order.OrderWorkflowService;
+import com.supplysync.services.pricing.PricingService;
+import com.supplysync.domain.pricing.PricingResult;
+import com.supplysync.domain.pricing.OrderPricingContext;
 
 import java.util.Comparator;
 import java.util.List;
@@ -23,6 +26,7 @@ public final class OrderFacade {
     private final CatalogFacade catalog;
     private final DraftFacade drafts;
     private final InventoryService inventoryService;
+    private final PricingService pricingService;
 
     public OrderFacade(
             OrderWorkflowService workflowService,
@@ -30,13 +34,15 @@ public final class OrderFacade {
             AuthFacade auth,
             CatalogFacade catalog,
             DraftFacade drafts,
-            InventoryService inventoryService
+            InventoryService inventoryService,
+            PricingService pricingService
     ) {
         this.workflowService = workflowService;
         this.auth = auth;
         this.catalog = catalog;
         this.drafts = drafts;
         this.inventoryService = inventoryService;
+        this.pricingService = pricingService;
     }
 
     public Order submitOrder(Order order) {
@@ -45,6 +51,10 @@ public final class OrderFacade {
         catalog.clearCart();
         drafts.discardDraftForCurrentUser();
         return submitted;
+    }
+
+    public PricingResult previewPricing(OrderPricingContext context) {
+        return pricingService.previewPricing(context);
     }
 
     public Order executeTransition(String orderId, OrderTransition transition) {

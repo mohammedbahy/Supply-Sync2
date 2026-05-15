@@ -114,10 +114,33 @@ public class SqliteStorage implements Storage {
                     + "actor_name TEXT NOT NULL,"
                     + "created_at TEXT NOT NULL,"
                     + "FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE)");
+            s.execute("CREATE TABLE IF NOT EXISTS promotions ("
+                    + "id TEXT PRIMARY KEY,"
+                    + "code TEXT NOT NULL UNIQUE,"
+                    + "discount_type TEXT NOT NULL,"
+                    + "discount_value REAL NOT NULL,"
+                    + "valid_until TEXT)");
+            s.execute("CREATE TABLE IF NOT EXISTS pricing_rules ("
+                    + "id TEXT PRIMARY KEY,"
+                    + "rule_type TEXT NOT NULL,"
+                    + "parameters TEXT,"
+                    + "is_active INTEGER NOT NULL DEFAULT 1)");
             ensureOrdersPlacedAtColumn(c);
             ensureOrdersCustomerCountryColumn(c);
             ensureOrdersStatusBeforeHoldColumn(c);
             ensureUserOrderPrefsColumns(c);
+            ensureOrdersPricingSnapshotColumn(c);
+        }
+    }
+
+    private void ensureOrdersPricingSnapshotColumn(Connection c) throws SQLException {
+        try (Statement st = c.createStatement()) {
+            st.execute("ALTER TABLE orders ADD COLUMN pricing_snapshot TEXT");
+        } catch (SQLException e) {
+            String msg = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
+            if (!msg.contains("duplicate column") && !msg.contains("already exists")) {
+                throw e;
+            }
         }
     }
 
@@ -289,7 +312,7 @@ public class SqliteStorage implements Storage {
                 }
                 try (PreparedStatement ins = c.prepareStatement(
                         "INSERT OR REPLACE INTO orders (id,marketer_id,customer_name,customer_phone,customer_country,customer_address,"
-                                + "status,total_amount,commission,order_date,placed_at,status_before_hold) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)")) {
+                                + "status,total_amount,commission,order_date,placed_at,status_before_hold,pricing_snapshot) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)")) {
                     ins.setString(1, order.getId());
                     if (order.getMarketer() != null) {
                         ins.setString(2, order.getMarketer().getId());
@@ -314,6 +337,7 @@ public class SqliteStorage implements Storage {
                     } else {
                         ins.setNull(12, Types.VARCHAR);
                     }
+                    ins.setString(13, "{}"); // pricing_snapshot empty JSON for now
                     ins.executeUpdate();
                 }
                 try (PreparedStatement line = c.prepareStatement(

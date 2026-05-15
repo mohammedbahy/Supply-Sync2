@@ -8,6 +8,10 @@ import com.supplysync.models.Order;
 import com.supplysync.models.OrderStatuses;
 import com.supplysync.models.Product;
 import com.supplysync.models.User;
+import com.supplysync.models.Marketer;
+import com.supplysync.domain.pricing.CartItemDto;
+import com.supplysync.domain.pricing.OrderPricingContext;
+import com.supplysync.domain.pricing.PricingResult;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
@@ -25,6 +29,7 @@ import javafx.scene.control.ButtonType;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -200,7 +205,27 @@ public class OrdersController extends BaseScreenController {
         orderItemsContainer.getChildren().clear();
 
         List<Product> selectedProducts = catalog().getCart();
-        double subtotal = 0;
+        List<CartItemDto> cartItems = new java.util.ArrayList<>();
+        Map<String, Integer> productQuantities = new LinkedHashMap<>();
+        Map<String, Product> productMap = new HashMap<>();
+        
+        for (Product p : selectedProducts) {
+            productQuantities.put(p.getId(), productQuantities.getOrDefault(p.getId(), 0) + 1);
+            productMap.put(p.getId(), p);
+        }
+
+        for (Map.Entry<String, Integer> entry : productQuantities.entrySet()) {
+            Product p = productMap.get(entry.getKey());
+            cartItems.add(new CartItemDto(p.getId(), p.getName(), p.getPrice(), entry.getValue()));
+        }
+
+        User u = auth() != null ? auth().getCurrentUser() : null;
+        Marketer m = u != null ? new Marketer(u.getId(), u.getName()) : null;
+        OrderPricingContext ctx = new OrderPricingContext(cartItems, u, m, LocalDateTime.now(), null);
+        PricingResult pricing = orders() != null ? orders().previewPricing(ctx) : null;
+        
+        double subtotal = pricing != null ? pricing.getSubtotal() : 0;
+        double finalTotal = pricing != null ? pricing.getFinalPrice() : 0;
 
         for (Product p : selectedProducts) {
             HBox row = new HBox(15);
@@ -229,14 +254,13 @@ public class OrdersController extends BaseScreenController {
 
             row.getChildren().addAll(info, spacer, price, removeBtn);
             orderItemsContainer.getChildren().add(row);
-            subtotal += p.getPrice();
         }
 
         if (subtotalLabel != null) {
             subtotalLabel.setText("$" + String.format("%.2f", subtotal));
         }
         if (totalLabel != null) {
-            totalLabel.setText("$" + String.format("%.2f", subtotal));
+            totalLabel.setText("$" + String.format("%.2f", finalTotal));
         }
     }
 
@@ -297,6 +321,22 @@ public class OrdersController extends BaseScreenController {
         double total = Double.parseDouble(totalText);
         LocalDateTime now = LocalDateTime.now();
 
+        List<CartItemDto> cartItems = new java.util.ArrayList<>();
+        Map<String, Integer> productQuantities = new LinkedHashMap<>();
+        Map<String, Product> productMap = new HashMap<>();
+        for (Product p : catalog().getCart()) {
+            productQuantities.put(p.getId(), productQuantities.getOrDefault(p.getId(), 0) + 1);
+            productMap.put(p.getId(), p);
+        }
+        for (Map.Entry<String, Integer> entry : productQuantities.entrySet()) {
+            Product p = productMap.get(entry.getKey());
+            cartItems.add(new CartItemDto(p.getId(), p.getName(), p.getPrice(), entry.getValue()));
+        }
+
+        Marketer marketer = new Marketer(u.getId(), u.getName());
+        OrderPricingContext ctx = new OrderPricingContext(cartItems, u, marketer, now, null);
+        PricingResult pricing = orders().previewPricing(ctx);
+
         Order order = OrderFactory.createAwaitingApproval(
                 new OrderBuilder()
                         .withId("ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
@@ -306,7 +346,7 @@ public class OrdersController extends BaseScreenController {
                         .withShippingAddress(addressArea.getText().trim())
                         .withShippingCity(country)
                         .withProducts(new java.util.ArrayList<>(catalog().getCart()))
-                        .withTotalAmount(total),
+                        .withPricingResult(pricing),
                 u);
 
         String timestamp = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));

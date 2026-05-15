@@ -11,6 +11,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.supplysync.domain.pricing.PricingResult;
+
 public class OrderBuilder {
     private String id;
     private String marketerId;
@@ -22,6 +24,7 @@ public class OrderBuilder {
     private double commission;
     private double totalAmount;
     private String trackingNumber;
+    private PricingResult pricingResult;
 
     public OrderBuilder withId(String id) {
         this.id = id;
@@ -90,6 +93,11 @@ public class OrderBuilder {
         return this;
     }
 
+    public OrderBuilder withPricingResult(PricingResult pricingResult) {
+        this.pricingResult = pricingResult;
+        return this;
+    }
+
     public Order build() {
         if (id == null || marketerId == null || products.isEmpty()) {
             throw new IllegalStateException("Missing required fields: id, marketerId, or products");
@@ -104,12 +112,20 @@ public class OrderBuilder {
         order.setShippingCity(shippingCity);
         order.setCustomerCountry(shippingCity);
         order.getProducts().addAll(products);
-        order.setCommission(commission);
-        if (totalAmount > 0) {
-            order.setTotalAmount(totalAmount);
+        
+        if (pricingResult != null) {
+            order.setCommission(pricingResult.getCommission());
+            order.setTotalAmount(pricingResult.getFinalPrice());
+            // TODO: In the future, persist discounts breakdown into a pricing_snapshot JSON field
         } else {
-            order.setTotalAmount(products.stream().mapToDouble(Product::getPrice).sum());
+            order.setCommission(commission);
+            if (totalAmount > 0) {
+                order.setTotalAmount(totalAmount);
+            } else {
+                order.setTotalAmount(products.stream().mapToDouble(Product::getPrice).sum());
+            }
         }
+        
         order.setTrackingNumber(trackingNumber);
         OrderStatusHydrator.hydrate(order, OrderStatuses.AWAITING_APPROVAL);
         LocalDateTime now = LocalDateTime.now();

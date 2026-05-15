@@ -11,6 +11,8 @@ import com.supplysync.services.inventory.InventoryService;
 import com.supplysync.services.notification.NotificationService;
 import com.supplysync.services.order.OrderService;
 import com.supplysync.services.order.OrderWorkflowService;
+import com.supplysync.services.pricing.PricingService;
+import com.supplysync.domain.pricing.factory.PricingStrategyFactory;
 
 public final class ApplicationContext {
     private final AuthFacade auth;
@@ -63,13 +65,18 @@ public final class ApplicationContext {
         AuthFacade auth = new AuthFacade(authService, storage);
         CatalogFacade catalog = new CatalogFacade(inventoryService, storage);
         DraftFacade drafts = new DraftFacade(storage, auth, catalog);
+        
+        PricingStrategyFactory pricingFactory = new PricingStrategyFactory();
+        PricingService pricingService = new PricingService(pricingFactory);
+        
         OrderFacade orders = new OrderFacade(
                 workflow,
                 eventBus,
                 auth,
                 catalog,
                 drafts,
-                inventoryService
+                inventoryService,
+                pricingService
         );
         DashboardFacade dashboard = new DashboardFacade(orderService, catalog, storage);
         NotificationFacade notifications = new NotificationFacade(storage);
