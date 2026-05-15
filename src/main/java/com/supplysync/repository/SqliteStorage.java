@@ -7,6 +7,7 @@ import com.supplysync.models.Order;
 import com.supplysync.models.Product;
 import com.supplysync.models.User;
 import com.supplysync.models.OrderStatuses;
+import com.supplysync.models.OrderStatusHistoryEntry;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -102,6 +103,16 @@ public class SqliteStorage implements Storage {
                     + "shipping_address TEXT,"
                     + "cart_lines TEXT NOT NULL,"
                     + "updated_at TEXT NOT NULL)");
+            s.execute("CREATE TABLE IF NOT EXISTS order_status_history ("
+                    + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    + "order_id TEXT NOT NULL,"
+                    + "from_status TEXT,"
+                    + "to_status TEXT NOT NULL,"
+                    + "transition_name TEXT NOT NULL,"
+                    + "actor_id TEXT,"
+                    + "actor_name TEXT NOT NULL,"
+                    + "created_at TEXT NOT NULL,"
+                    + "FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE)");
             ensureOrdersPlacedAtColumn(c);
             ensureOrdersCustomerCountryColumn(c);
             ensureUserOrderPrefsColumns(c);
@@ -674,5 +685,66 @@ public class SqliteStorage implements Storage {
         } catch (SQLException e) {
             throw new IllegalStateException("deleteMarketerOrderDraft failed", e);
         }
+    }
+
+    @Override
+    public void appendOrderStatusHistory(OrderStatusHistoryEntry entry) {
+        try (Connection c = connect();
+             PreparedStatement ps = c.prepareStatement(
+                     "INSERT INTO order_status_history (order_id, from_status, to_status, transition_name, actor_id, actor_name, created_at) "
+                             + "VALUES (?,?,?,?,?,?,?)")) {
+            ps.setString(1, entry.getOrderId());
+            if (entry.getFromStatus() != null) {
+                ps.setString(2, entry.getFromStatus());
+            } else {
+                ps.setNull(2, Types.VARCHAR);
+            }
+            ps.setString(3, entry.getToStatus());
+            ps.setString(4, entry.getTransitionName());
+            if (entry.getActorId() != null) {
+                ps.setString(5, entry.getActorId());
+            } else {
+                ps.setNull(5, Types.VARCHAR);
+            }
+            ps.setString(6, entry.getActorName() != null ? entry.getActorName() : "System");
+            ps.setString(7, entry.getCreatedAt() != null ? entry.getCreatedAt().format(ISO_DT) : LocalDateTime.now().format(ISO_DT));
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new IllegalStateException("appendOrderStatusHistory failed", e);
+        }
+    }
+
+    @Override
+    public List<OrderStatusHistoryEntry> findOrderStatusHistory(String orderId) {
+        List<OrderStatusHistoryEntry> list = new ArrayList<>();
+        if (orderId == null) {
+            return list;
+        }
+        try (Connection c = connect();
+             PreparedStatement ps = c.prepareStatement(
+                     "SELECT id, order_id, from_status, to_status, transition_name, actor_id, actor_name, created_at "
+                             + "FROM order_status_history WHERE order_id=? ORDER BY created_at ASC, id ASC")) {
+            ps.setString(1, orderId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    OrderStatusHistoryEntry e = new OrderStatusHistoryEntry();
+                    e.setId(rs.getLong("id"));
+                    e.setOrderId(rs.getString("order_id"));
+                    e.setFromStatus(rs.getString("from_status"));
+                    e.setToStatus(rs.getString("to_status"));
+                    e.setTransitionName(rs.getString("transition_name"));
+                    e.setActorId(rs.getString("actor_id"));
+                    e.setActorName(rs.getString("actor_name"));
+                    String at = rs.getString("created_at");
+                    if (at != null && !at.isBlank()) {
+                        e.setCreatedAt(LocalDateTime.parse(at, ISO_DT));
+                    }
+                    list.add(e);
+                }
+            }
+        } catch (SQLException e) {
+            throw new IllegalStateException("findOrderStatusHistory failed", e);
+        }
+        return list;
     }
 }

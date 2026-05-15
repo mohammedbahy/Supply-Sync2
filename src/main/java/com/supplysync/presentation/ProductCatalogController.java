@@ -16,12 +16,9 @@ public class ProductCatalogController extends BaseScreenController {
     @FXML
     private FlowPane productFlowPane;
     @FXML
-    private javafx.scene.control.TextField searchField;
-    @FXML
     private Label userNameLabel;
 
     private String currentCategory = "All Categories";
-    private String searchQuery = "";
 
     public void initialize() {
         renderProducts();
@@ -37,19 +34,13 @@ public class ProductCatalogController extends BaseScreenController {
     }
 
     @FXML
-    private void handleSearch() {
-        searchQuery = searchField.getText();
-        renderProducts();
-    }
-
-    @FXML
     private void showHelp() {
         javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
         alert.setTitle(LanguageManager.get("Support"));
         alert.setHeaderText(LanguageManager.get("Product Catalog Instructions"));
-        alert.setContentText(LanguageManager.isArabic() ? 
-            "1. تصفح المنتجات حسب الفئة.\n2. ابحث عن المنتجات بالاسم أو الرقم التعريفي.\n3. اضغط على 'إضافة للطلب' لاختيار المنتج." :
-            "1. Browse products by category.\n2. Search for products by name or ID.\n3. Click 'ADD TO ORDER' to select a product.");
+        alert.setContentText(LanguageManager.isArabic() ?
+            "1. تصفح المنتجات حسب الفئة.\n2. اضغط على 'إضافة للطلب' لاختيار المنتج." :
+            "1. Browse products by category.\n2. Click 'ADD TO ORDER' to select a product.");
         alert.showAndWait();
     }
 
@@ -73,11 +64,7 @@ public class ProductCatalogController extends BaseScreenController {
                                      product.getCategory().equals(currentCategory) ||
                                      translatedCat.equals(currentCategory);
             
-            boolean matchesSearch = searchQuery.isEmpty() || 
-                                   product.getName().toLowerCase().contains(searchQuery.toLowerCase()) || 
-                                   product.getId().contains(searchQuery);
-
-            if (matchesCategory && matchesSearch) {
+            if (matchesCategory) {
                 VBox card = createProductCard(product);
                 productFlowPane.getChildren().add(card);
             }

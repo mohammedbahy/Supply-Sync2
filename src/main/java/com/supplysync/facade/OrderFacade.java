@@ -13,8 +13,13 @@ import com.supplysync.models.AdminDashboardStats;
 import com.supplysync.models.MarketerCancelResult;
 import com.supplysync.models.MarketerOrderDraft;
 import com.supplysync.models.OrderStatuses;
+import com.supplysync.models.OrderStatusHistoryEntry;
+import com.supplysync.workflow.OrderEventBus;
+import com.supplysync.workflow.OrderTransition;
+import com.supplysync.workflow.OrderWorkflowService;
 
 import java.util.Comparator;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ArrayList;
@@ -30,7 +35,8 @@ public class OrderFacade {
     private final NotificationService notificationService;
     private final AuthService authService;
     private final com.supplysync.repository.Storage storage;
-    
+    private final OrderWorkflowService workflowService;
+
     // In-memory cart for the current session
     private final List<Product> cart = new ArrayList<>();
 
@@ -48,6 +54,7 @@ public class OrderFacade {
         this.notificationService = notificationService;
         this.authService = authService;
         this.storage = storage;
+        this.workflowService = new OrderWorkflowService(storage, inventoryService);
     }
 
     public void processOrder(Order order) {
@@ -55,11 +62,40 @@ public class OrderFacade {
         inventoryService.reserveInventory(order);
         deliveryService.schedule(order);
         notificationService.notifyOrderUpdate(order);
+        workflowService.recordOrderPlaced(order, getCurrentUser());
         clearCart();
         User u = getCurrentUser();
         if (u != null) {
             storage.deleteMarketerOrderDraft(u.getId());
         }
+        OrderEventBus.getInstance().publish(order.getId());
+    }
+
+    public Optional<Order> findOrderById(String orderId) {
+        return storage.findOrderById(orderId);
+    }
+
+    public List<OrderTransition> getAllowedTransitions(String orderId) {
+        return storage.findOrderById(orderId)
+                .map(workflowService::getAllowedTransitions)
+                .orElse(Collections.emptyList());
+    }
+
+    public void executeTransition(String orderId, OrderTransition transition) {
+        workflowService.executeTransition(orderId, transition, getCurrentUser());
+        storage.findOrderById(orderId).ifPresent(notificationService::notifyOrderUpdate);
+        OrderEventBus.getInstance().publish(orderId);
+    }
+
+    public List<OrderStatusHistoryEntry> getOrderStatusHistory(String orderId) {
+        return storage.findOrderStatusHistory(orderId);
+    }
+
+    public List<Order> getOrdersAwaitingApproval() {
+        return getAllOrders().stream()
+                .filter(o -> OrderStatuses.PENDING.equals(OrderStatuses.normalize(o.getStatus())))
+                .sorted(Comparator.comparing(Order::getEffectivePlacedAt).reversed())
+                .collect(Collectors.toList());
     }
 
     public List<Product> getCatalog() {
@@ -88,6 +124,19 @@ public class OrderFacade {
 
     public void register(User user) {
         authService.register(user);
+    }
+
+    public void saveUser(User user) {
+        storage.saveUser(user);
+    }
+
+    public boolean emailTakenByOtherUser(String email, String excludeUserId) {
+        if (email == null) {
+            return false;
+        }
+        return storage.findUserByEmail(email.trim())
+                .filter(u -> excludeUserId == null || !excludeUserId.equals(u.getId()))
+                .isPresent();
     }
 
     public boolean resetPassword(String email, String newPassword) {

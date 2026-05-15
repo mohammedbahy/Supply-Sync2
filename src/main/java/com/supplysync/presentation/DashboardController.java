@@ -11,7 +11,6 @@ import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -50,18 +49,6 @@ public class DashboardController extends BaseScreenController {
     @FXML
     private Label chartLegendLabel;
     @FXML
-    private Label inTransitPctLabel;
-    @FXML
-    private ProgressBar inTransitProgress;
-    @FXML
-    private Label stockAvailPctLabel;
-    @FXML
-    private ProgressBar stockAvailProgress;
-    @FXML
-    private Label cancelledPctLabel;
-    @FXML
-    private ProgressBar cancelledProgress;
-    @FXML
     private Label dashboardInfoLabel;
     @FXML
     private VBox recentInventoryVBox;
@@ -90,24 +77,6 @@ public class DashboardController extends BaseScreenController {
         }
         if (revenueLabel != null) {
             revenueLabel.setText("$0.00");
-        }
-        if (inTransitPctLabel != null) {
-            inTransitPctLabel.setText("0%");
-        }
-        if (inTransitProgress != null) {
-            inTransitProgress.setProgress(0);
-        }
-        if (stockAvailPctLabel != null) {
-            stockAvailPctLabel.setText("0%");
-        }
-        if (stockAvailProgress != null) {
-            stockAvailProgress.setProgress(0);
-        }
-        if (cancelledPctLabel != null) {
-            cancelledPctLabel.setText("0%");
-        }
-        if (cancelledProgress != null) {
-            cancelledProgress.setProgress(0);
         }
         if (dashboardInfoLabel != null) {
             dashboardInfoLabel.setText("");
@@ -183,10 +152,6 @@ public class DashboardController extends BaseScreenController {
         clearTrend(metricTrendOrders);
         clearTrend(metricTrendPending);
         clearTrend(metricTrendRevenue);
-        DashboardUiHelper.applyVelocity(s,
-                inTransitPctLabel, inTransitProgress,
-                stockAvailPctLabel, stockAvailProgress,
-                cancelledPctLabel, cancelledProgress);
         DashboardUiHelper.applyInfoBanner(s, dashboardInfoLabel);
         DashboardUiHelper.rebuildStatisticsChart(statsChartBox, chartLegendLabel, s);
         DashboardUiHelper.fillRecentInventory(recentInventoryVBox, dashboardPort.loadProductCatalogSnapshot(), 10);

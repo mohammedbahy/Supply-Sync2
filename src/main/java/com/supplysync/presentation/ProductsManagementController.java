@@ -9,7 +9,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
-
 import java.util.List;
 
 public class ProductsManagementController extends BaseScreenController {
@@ -155,7 +154,6 @@ public class ProductsManagementController extends BaseScreenController {
 
         TextField idField = new TextField();
         TextField nameField = new TextField();
-        TextField catField = new TextField();
         TextField qtyField = new TextField();
         TextField priceField = new TextField();
 
@@ -163,8 +161,7 @@ public class ProductsManagementController extends BaseScreenController {
         grid.add(idField, 1, 0);
         grid.add(new Label("Name:"), 0, 1);
         grid.add(nameField, 1, 1);
-        grid.add(new Label("Category:"), 0, 2);
-        grid.add(catField, 1, 2);
+        CategoryPickerHelper.addCategoryRow(grid, 2, orderFacade.getCatalog(), null);
         grid.add(new Label("Quantity:"), 0, 3);
         grid.add(qtyField, 1, 3);
         grid.add(new Label("Price:"), 0, 4);
@@ -189,9 +186,10 @@ public class ProductsManagementController extends BaseScreenController {
                 int qty = Integer.parseInt(qtyField.getText().trim());
                 double price = Double.parseDouble(priceField.getText().trim());
                 String name = nameField.getText() != null ? nameField.getText().trim() : "";
-                String cat = catField.getText() != null ? catField.getText().trim() : "";
+                String cat = CategoryPickerHelper.resolveCategory(CategoryPickerHelper.findCategoryBox(grid));
                 if (name.isEmpty() || cat.isEmpty()) {
-                    showAlert(Alert.AlertType.ERROR, "Validation", "Name and category are required.");
+                    showAlert(Alert.AlertType.ERROR, "Validation",
+                            LanguageManager.isArabic() ? "الاسم والقسم مطلوبان." : "Name and category are required.");
                     return null;
                 }
                 return new Product(id, name, qty, cat, price, "");
@@ -225,7 +223,6 @@ public class ProductsManagementController extends BaseScreenController {
         idDisplay.setEditable(false);
 
         TextField nameField = new TextField(selected.getName());
-        TextField catField = new TextField(selected.getCategory());
         TextField qtyField = new TextField(String.valueOf(selected.getQuantity()));
         TextField priceField = new TextField(String.valueOf(selected.getPrice()));
 
@@ -233,8 +230,7 @@ public class ProductsManagementController extends BaseScreenController {
         grid.add(idDisplay, 1, 0);
         grid.add(new Label("Name:"), 0, 1);
         grid.add(nameField, 1, 1);
-        grid.add(new Label("Category:"), 0, 2);
-        grid.add(catField, 1, 2);
+        CategoryPickerHelper.addCategoryRow(grid, 2, orderFacade.getCatalog(), selected.getCategory());
         grid.add(new Label("Quantity:"), 0, 3);
         grid.add(qtyField, 1, 3);
         grid.add(new Label("Price:"), 0, 4);
@@ -247,15 +243,17 @@ public class ProductsManagementController extends BaseScreenController {
                 return null;
             }
             try {
+                String cat = CategoryPickerHelper.resolveCategory(CategoryPickerHelper.findCategoryBox(grid));
                 Product copy = new Product(
                         selected.getId(),
                         nameField.getText().trim(),
                         Integer.parseInt(qtyField.getText().trim()),
-                        catField.getText().trim(),
+                        cat,
                         Double.parseDouble(priceField.getText().trim()),
                         selected.getImagePath() != null ? selected.getImagePath() : "");
                 if (copy.getName().isEmpty() || copy.getCategory().isEmpty()) {
-                    showAlert(Alert.AlertType.ERROR, "Validation", "Name and category are required.");
+                    showAlert(Alert.AlertType.ERROR, "Validation",
+                            LanguageManager.isArabic() ? "الاسم والقسم مطلوبان." : "Name and category are required.");
                     return null;
                 }
                 return copy;

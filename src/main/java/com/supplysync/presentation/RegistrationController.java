@@ -2,6 +2,7 @@ package com.supplysync.presentation;
 
 import com.supplysync.models.User;
 import com.supplysync.presentation.auth.PasswordRevealSupport;
+import com.supplysync.presentation.auth.UserRegistrationValidator;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -52,48 +53,10 @@ public class RegistrationController extends BaseScreenController {
         String password = PasswordRevealSupport.effectivePassword(showPasswordCheck, passwordField, passwordPlainField);
         String confirmPassword = PasswordRevealSupport.effectivePassword(showPasswordCheck, confirmPasswordField, confirmPlainField);
 
-        if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || 
-            company.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
-            showAlert("Validation Error", "All fields are required.");
-            return;
-        }
-
-        if (firstName.length() < 3) {
-            showAlert("Validation Error", "First name must be at least 3 characters.");
-            return;
-        }
-
-        if (lastName.length() < 3) {
-            showAlert("Validation Error", "Last name must be at least 3 characters.");
-            return;
-        }
-
-        if (!email.toLowerCase().contains("@gmail") && !email.toLowerCase().contains("@icloud")) {
-            showAlert("Validation Error", "Email must be a @gmail or @icloud address.");
-            return;
-        }
-
-        if (password.length() < 6) {
-            showAlert("Validation Error", "Password must be at least 6 characters.");
-            return;
-        }
-
-        boolean hasLetter = password.matches(".*[a-zA-Z].*");
-        boolean hasDigit = password.matches(".*\\d.*");
-        boolean hasSymbol = password.matches(".*[^a-zA-Z0-9].*");
-
-        if (!hasLetter || !hasDigit || !hasSymbol) {
-            showAlert("Validation Error", "Password must contain at least one letter, one number, and one symbol.");
-            return;
-        }
-
-        if (!password.equals(confirmPassword)) {
-            showAlert("Validation Error", "Passwords do not match.");
-            return;
-        }
-
-        if (!agreeCheckBox.isSelected()) {
-            showAlert("Validation Error", "You must agree to the Terms and Privacy Policy.");
+        java.util.List<String> errors = UserRegistrationValidator.validateNewMarketer(
+                firstName, lastName, email, company, password, confirmPassword, agreeCheckBox.isSelected());
+        if (!errors.isEmpty()) {
+            showAlert("Validation Error", String.join("\n", errors));
             return;
         }
 

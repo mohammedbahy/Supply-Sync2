@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.supplysync.presentation.OrdersManagementController" stylesheets="@orders-management.css" styleClass="root-pane">
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.supplysync.presentation.OrdersManagementController" stylesheets="@orders-management.css,@order-workflow.css" styleClass="root-pane">
     <left>
         <VBox prefWidth="220.0" styleClass="sidebar">
             <padding>
@@ -101,11 +101,7 @@
                     </VBox>
 
                     <Region VBox.vgrow="ALWAYS"/>
-                    <VBox spacing="10.0">
-                        <Button fx:id="approveBtn" text="Mark in transit" onAction="#handleApproveOrder" styleClass="primary-btn full-btn" visible="false"/>
-                        <Button fx:id="deliverBtn" text="Mark delivered" onAction="#handleMarkDelivered" styleClass="primary-btn full-btn" visible="false"/>
-                        <Button fx:id="cancelBtn" text="CANCEL ORDER" onAction="#handleCancelOrder" styleClass="danger-link" visible="false"/>
-                    </VBox>
+                    <VBox fx:id="workflowActionsBox" spacing="10.0"/>
                 </VBox>
             </right>
         </BorderPane>

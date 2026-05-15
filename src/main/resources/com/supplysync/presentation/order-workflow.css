@@ -1,0 +1,58 @@
+.filter-field {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 6;
+    -fx-border-color: #e5e7eb;
+    -fx-border-radius: 6;
+    -fx-padding: 8 12 8 12;
+}
+
+.col-marketer { -fx-pref-width: 120; }
+
+.timeline-panel {
+    -fx-min-height: 200;
+}
+
+.timeline-root { -fx-padding: 4 0 4 0; }
+
+.timeline-entry { -fx-padding: 4 0 4 0; }
+
+.timeline-status {
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #1f2937;
+}
+
+.timeline-meta {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+    -fx-padding: 0 0 0 22;
+}
+
+.timeline-arrow { -fx-text-fill: #9ca3af; }
+
+.timeline-dot-pending { -fx-text-fill: #ea580c; -fx-font-size: 14px; }
+.timeline-dot-transit { -fx-text-fill: #2563eb; -fx-font-size: 14px; }
+.timeline-dot-delivered { -fx-text-fill: #16a34a; -fx-font-size: 14px; }
+.timeline-dot-cancelled { -fx-text-fill: #dc2626; -fx-font-size: 14px; }
+.timeline-dot-hold { -fx-text-fill: #ca8a04; -fx-font-size: 14px; }
+.timeline-dot-partial { -fx-text-fill: #7c3aed; -fx-font-size: 14px; }
+
+.tag-on-hold {
+    -fx-pref-width: 85;
+    -fx-font-size: 10px;
+    -fx-font-weight: 600;
+    -fx-padding: 3 8 3 8;
+    -fx-background-radius: 999;
+    -fx-background-color: #fef9c3;
+    -fx-text-fill: #854d0e;
+}
+
+.tag-partial {
+    -fx-pref-width: 85;
+    -fx-font-size: 10px;
+    -fx-font-weight: 600;
+    -fx-padding: 3 8 3 8;
+    -fx-background-radius: 999;
+    -fx-background-color: #ede9fe;
+    -fx-text-fill: #5b21b6;
+}

@@ -41,7 +41,6 @@
             <padding><Insets top="10.0" right="20.0" bottom="16.0" left="20.0"/></padding>
 
             <HBox spacing="10.0" alignment="CENTER_LEFT">
-                <TextField fx:id="orderSearchField" promptText="Search orders..." styleClass="search-field" HBox.hgrow="ALWAYS" onAction="#handleSearchOrder"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <Label text="🔔" styleClass="top-icon" onMouseClicked="#openMessages"/>
                 <Label text="❔" styleClass="top-icon" onMouseClicked="#showHelp"/>

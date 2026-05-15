@@ -6,6 +6,7 @@ import com.supplysync.models.User;
 import com.supplysync.models.Marketer;
 import com.supplysync.models.MarketerOrderDraft;
 import com.supplysync.models.Message;
+import com.supplysync.models.OrderStatusHistoryEntry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,8 @@ public class InMemoryStorage implements Storage {
     private final List<Marketer> marketers = new ArrayList<>();
     private final List<Message> messages = new ArrayList<>();
     private final Map<String, MarketerOrderDraft> marketerDrafts = new ConcurrentHashMap<>();
+    private final List<OrderStatusHistoryEntry> statusHistory = new ArrayList<>();
+    private long historySeq = 1L;
 
     public InMemoryStorage() {
         // Seed Products from 212.txt
@@ -144,5 +147,22 @@ public class InMemoryStorage implements Storage {
         if (marketerId != null) {
             marketerDrafts.remove(marketerId);
         }
+    }
+
+    @Override
+    public void appendOrderStatusHistory(OrderStatusHistoryEntry entry) {
+        entry.setId(historySeq++);
+        statusHistory.add(entry);
+    }
+
+    @Override
+    public List<OrderStatusHistoryEntry> findOrderStatusHistory(String orderId) {
+        List<OrderStatusHistoryEntry> out = new ArrayList<>();
+        for (OrderStatusHistoryEntry e : statusHistory) {
+            if (orderId != null && orderId.equals(e.getOrderId())) {
+                out.add(e);
+            }
+        }
+        return out;
     }
 }

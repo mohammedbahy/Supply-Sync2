@@ -6,6 +6,7 @@ import com.supplysync.models.User;
 import com.supplysync.models.MarketerOrderDraft;
 import com.supplysync.models.Message;
 import com.supplysync.models.Marketer;
+import com.supplysync.models.OrderStatusHistoryEntry;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,4 +34,8 @@ public interface Storage {
     void saveMarketerOrderDraft(MarketerOrderDraft draft);
     Optional<MarketerOrderDraft> findMarketerOrderDraft(String marketerId);
     void deleteMarketerOrderDraft(String marketerId);
+
+    void appendOrderStatusHistory(OrderStatusHistoryEntry entry);
+
+    List<OrderStatusHistoryEntry> findOrderStatusHistory(String orderId);
 }

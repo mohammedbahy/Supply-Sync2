@@ -223,3 +223,7 @@
     -fx-font-size: 13px;
     -fx-text-fill: #4b5563;
 }
+
+.table-row-selected {
+    -fx-background-color: #eff6ff;
+}

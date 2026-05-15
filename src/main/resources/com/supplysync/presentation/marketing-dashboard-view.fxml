@@ -43,7 +43,6 @@
             </padding>
 
             <HBox alignment="CENTER_LEFT" spacing="10.0">
-                <TextField fx:id="searchField" promptText="Search operations..." styleClass="search-field" HBox.hgrow="ALWAYS" onMouseClicked="#handleSearch"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <Label text="🔔" styleClass="top-icon" onMouseClicked="#openMessages"/>
                 <Label text="❔" styleClass="top-icon" onMouseClicked="#showHelp"/>

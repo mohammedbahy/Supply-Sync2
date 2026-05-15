@@ -39,7 +39,6 @@
         <VBox spacing="12.0" styleClass="main-area">
             <padding><Insets top="10.0" right="20.0" bottom="16.0" left="20.0"/></padding>
             <HBox alignment="CENTER_LEFT" spacing="10.0">
-                <TextField fx:id="searchField" promptText="Search products..." styleClass="search-field" HBox.hgrow="ALWAYS" onKeyReleased="#handleSearch"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <Label text="💬" styleClass="top-icon" onMouseClicked="#openMessages"/>
                 <Label text="❔" styleClass="top-icon" onMouseClicked="#showHelp"/>
