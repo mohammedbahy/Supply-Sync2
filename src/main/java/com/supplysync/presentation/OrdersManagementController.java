@@ -114,39 +114,53 @@ public class OrdersManagementController extends BaseScreenController {
     }
 
     private void showOrderDetails(Order order) {
-        if (order == null) {
+        if (order == null || orders() == null) {
             return;
         }
+        Order resolved = order.getId() != null
+                ? orders().findOrderById(order.getId()).orElse(order)
+                : order;
         try {
-            this.selectedOrder = order;
+            this.selectedOrder = resolved;
             if (detailsOrderId != null) {
-                detailsOrderId.setText(order.getId() != null ? order.getId() : "—");
+                detailsOrderId.setText(resolved.getId() != null ? resolved.getId() : "—");
             }
             if (detailsStatusLabel != null) {
-                detailsStatusLabel.setText(OrderStatuses.displayLabel(order.getStatus(), LanguageManager.isArabic()));
+                detailsStatusLabel.getStyleClass().removeAll("status-on-hold");
+                String statusText = OrderStatuses.displayLabel(resolved.getStatus(), LanguageManager.isArabic());
+                if (OrderStatuses.ON_HOLD.equals(resolved.getStatus())) {
+                    detailsStatusLabel.getStyleClass().add("status-on-hold");
+                    statusText = LanguageManager.isArabic()
+                            ? "معلق — الطلب قيد التعليق"
+                            : "On hold — order is suspended";
+                }
+                detailsStatusLabel.setText(statusText);
             }
             if (detailsOrderDate != null) {
+                String placed = resolved.getEffectivePlacedAt() != null
+                        ? resolved.getEffectivePlacedAt().toString()
+                        : "—";
                 detailsOrderDate.setText(LanguageManager.isArabic()
-                        ? "تاريخ الطلب: " + formatOrderDate(order) + " — " + order.getEffectivePlacedAt()
-                        : "Placed: " + order.getEffectivePlacedAt() + " (date " + formatOrderDate(order) + ")");
+                        ? "تاريخ الطلب: " + formatOrderDate(resolved) + " — " + placed
+                        : "Placed: " + placed + " (date " + formatOrderDate(resolved) + ")");
             }
             if (detailsCustomerName != null) {
-                detailsCustomerName.setText(nullToDash(order.getCustomerName()));
+                detailsCustomerName.setText(nullToDash(resolved.getCustomerName()));
             }
             if (detailsCustomerPhone != null) {
-                detailsCustomerPhone.setText(nullToDash(order.getCustomerPhone()));
+                detailsCustomerPhone.setText(nullToDash(resolved.getCustomerPhone()));
             }
             if (detailsCustomerAddress != null) {
-                detailsCustomerAddress.setText(nullToDash(order.getCustomerAddress()));
+                detailsCustomerAddress.setText(nullToDash(resolved.getCustomerAddress()));
             }
             if (detailsTotalAmount != null) {
-                detailsTotalAmount.setText("$" + String.format("%.2f", order.getTotalAmount()));
+                detailsTotalAmount.setText("$" + String.format("%.2f", resolved.getTotalAmount()));
             }
 
             if (detailsItemsContainer != null) {
                 detailsItemsContainer.getChildren().clear();
-                if (order.getProducts() != null) {
-                    for (Product p : order.getProducts()) {
+                if (resolved.getProducts() != null) {
+                    for (Product p : resolved.getProducts()) {
                         HBox itemRow = new HBox();
                         Label pName = new Label(p.getName() != null ? p.getName() : "—");
                         Region pSpacer = new Region();
@@ -158,14 +172,14 @@ public class OrdersManagementController extends BaseScreenController {
                 }
             }
 
-            if (workflowActionsBox != null && orders() != null && order.getId() != null) {
+            if (workflowActionsBox != null && resolved.getId() != null) {
                 OrderWorkflowUiHelper.rebuildWorkflowButtons(
                         workflowActionsBox,
-                        order,
+                        resolved,
                         orders(),
                         () -> {
                             renderOrders();
-                            orders().findOrderById(order.getId()).ifPresent(o -> {
+                            orders().findOrderById(resolved.getId()).ifPresent(o -> {
                                 selectedOrder = o;
                                 showOrderDetails(o);
                             });
@@ -205,6 +219,15 @@ public class OrdersManagementController extends BaseScreenController {
         if (status == null) {
             return "tag-pending";
         }
+        if (OrderStatuses.ON_HOLD.equals(status)) {
+            return "tag-on-hold";
+        }
+        if (OrderStatuses.AWAITING_APPROVAL.equals(status)) {
+            return "tag-pending";
+        }
+        if (OrderStatuses.APPROVED.equals(status)) {
+            return "tag-approved";
+        }
         switch (OrderStatuses.normalize(status)) {
             case OrderStatuses.PENDING:
                 return "tag-pending";
@@ -214,8 +237,6 @@ public class OrdersManagementController extends BaseScreenController {
                 return "tag-delivered";
             case OrderStatuses.CANCELLED:
                 return "tag-cancelled";
-            case OrderStatuses.ON_HOLD:
-                return "tag-on-hold";
             case OrderStatuses.PARTIALLY_SHIPPED:
                 return "tag-partial";
             default:

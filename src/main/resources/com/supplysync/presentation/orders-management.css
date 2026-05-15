@@ -105,6 +105,12 @@
 .tag-approved { -fx-background-color: #ede9fe; -fx-text-fill: #5b21b6; }
 .tag-in-transit { -fx-background-color: #dbeafe; -fx-text-fill: #1e3a8a; }
 .tag-cancelled { -fx-background-color: #fee2e2; -fx-text-fill: #991b1b; }
+.tag-on-hold { -fx-background-color: #fef9c3; -fx-text-fill: #854d0e; }
+
+.status-on-hold {
+    -fx-text-fill: #854d0e;
+    -fx-font-weight: 700;
+}
 
 .details-panel {
     -fx-background-color: #ffffff;

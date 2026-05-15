@@ -58,7 +58,9 @@ public final class OrderWorkflowService {
         Order order = orders.findOrderById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderId));
 
-        if (!stateMachine.getAllowedTransitions(order, actor).contains(transition)) {
+        stateMachine.repairHoldState(order);
+
+        if (!stateMachine.isTransitionPermitted(order, actor, transition)) {
             throw new IllegalStateException(
                     "Transition " + transition + " is not allowed for role " + actor.getRole()
                             + " in status " + order.getStatus());
@@ -66,13 +68,13 @@ public final class OrderWorkflowService {
 
         guard.validate(order, transition, actor);
         String fromStatus = order.getStatus();
-        String toStatus = stateMachine.resolveTargetStatus(order, transition);
+        String toStatus = stateMachine.resolveTargetStatus(order, transition, actor);
 
         for (OrderTransitionSideEffect effect : sideEffects) {
             effect.beforeTransition(order, transition, fromStatus, toStatus, actor);
         }
 
-        stateMachine.applyTransition(order, transition);
+        stateMachine.applyTransition(order, transition, actor);
         orders.saveOrder(order);
 
         for (OrderTransitionSideEffect effect : sideEffects) {

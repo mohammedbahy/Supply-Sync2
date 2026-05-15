@@ -1,9 +1,9 @@
 package com.supplysync.facade;
 
-import com.supplysync.models.User;
 import com.supplysync.models.Marketer;
-import com.supplysync.repository.UserRepository;
+import com.supplysync.models.User;
 import com.supplysync.repository.MarketerRepository;
+import com.supplysync.repository.UserRepository;
 import com.supplysync.services.auth.AuthService;
 
 import java.util.List;
@@ -20,7 +20,11 @@ public final class AuthFacade {
     public AuthFacade(AuthService authService, UserRepository users) {
         this.authService = authService;
         this.users = users;
-        this.marketers = (MarketerRepository) users; // Storage implements both
+        if (users instanceof MarketerRepository) {
+            this.marketers = (MarketerRepository) users;
+        } else {
+            throw new IllegalArgumentException("UserRepository must also implement MarketerRepository");
+        }
     }
 
     public Optional<User> login(String email, String password) {
@@ -47,15 +51,17 @@ public final class AuthFacade {
         return users.findAllUsers();
     }
 
+    public void saveUser(User user) {
+        users.saveUser(user);
+    }
+
     public boolean emailTakenByOtherUser(String email, String excludeUserId) {
-        if (email == null) return false;
+        if (email == null) {
+            return false;
+        }
         return users.findUserByEmail(email.trim())
                 .filter(u -> excludeUserId == null || !excludeUserId.equals(u.getId()))
                 .isPresent();
-    }
-
-    public void saveUser(User user) {
-        users.saveUser(user);
     }
 
     public void addMarketer(Marketer marketer) {

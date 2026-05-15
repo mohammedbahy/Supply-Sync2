@@ -29,6 +29,8 @@ public class Order {
     private LocalDateTime placedAt;
     private String trackingNumber;
     private boolean inventoryReserved;
+    /** Status before {@link OrderStatuses#ON_HOLD} when held during delivery. */
+    private String statusBeforeHold;
 
     public Order() {
         this.date = LocalDate.now();
@@ -161,6 +163,14 @@ public class Order {
 
     public void setTrackingNumber(String trackingNumber) {
         this.trackingNumber = trackingNumber;
+    }
+
+    public String getStatusBeforeHold() {
+        return statusBeforeHold;
+    }
+
+    public void setStatusBeforeHold(String statusBeforeHold) {
+        this.statusBeforeHold = statusBeforeHold;
     }
 
     public double getTotalAmount() {

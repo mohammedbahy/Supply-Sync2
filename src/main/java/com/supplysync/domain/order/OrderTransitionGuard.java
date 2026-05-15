@@ -21,6 +21,9 @@ public final class OrderTransitionGuard {
         if (actor == null || actor.getRole() == null) {
             throw new SecurityException("Authenticated user with role is required");
         }
+        if ("ADMIN".equalsIgnoreCase(actor.getRole())) {
+            return;
+        }
 
         String role = actor.getRole().toUpperCase();
 

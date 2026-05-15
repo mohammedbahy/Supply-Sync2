@@ -150,16 +150,20 @@ public class InMemoryStorage implements Storage {
     }
 
     @Override
-    public void appendStatusHistory(String orderId, String fromStatus, String toStatus, String transition, String actorUserId) {
-        OrderStatusHistoryEntry e = new OrderStatusHistoryEntry();
-        e.setOrderId(orderId);
-        e.setFromStatus(fromStatus);
-        e.setToStatus(toStatus);
-        e.setTransitionName(transition);
-        e.setActorId(actorUserId);
-        e.setActorName("System");
-        e.setCreatedAt(java.time.LocalDateTime.now());
-        appendOrderStatusHistory(e);
+    public void appendStatusHistory(String orderId,
+                                    String fromStatus,
+                                    String toStatus,
+                                    String transition,
+                                    String actorUserId) {
+        OrderStatusHistoryEntry entry = new OrderStatusHistoryEntry();
+        entry.setOrderId(orderId);
+        entry.setFromStatus(fromStatus);
+        entry.setToStatus(toStatus);
+        entry.setTransitionName(transition);
+        entry.setActorId(actorUserId);
+        entry.setActorName("System");
+        entry.setCreatedAt(java.time.LocalDateTime.now());
+        appendOrderStatusHistory(entry);
     }
 
     @Override

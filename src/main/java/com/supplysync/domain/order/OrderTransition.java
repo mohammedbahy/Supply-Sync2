@@ -16,11 +16,11 @@ public enum OrderTransition {
     public String displayLabel(boolean arabic) {
         switch (this) {
             case APPROVE: return arabic ? "موافقة" : "Approve";
-            case PLACE_ON_HOLD: return arabic ? "تعليق" : "Hold";
-            case RELEASE_HOLD: return arabic ? "إلغاء التعليق" : "Release Hold";
+            case PLACE_ON_HOLD: return arabic ? "تعليق الطلب" : "Place on hold";
+            case RELEASE_HOLD: return arabic ? "إلغاء التعليق" : "Release hold";
             case SHIP_PARTIAL: return arabic ? "شحن جزئي" : "Ship Partial";
             case SHIP: return arabic ? "شحن" : "Ship";
-            case DELIVER: return arabic ? "تسليم" : "Deliver";
+            case DELIVER: return arabic ? "إتمام الطلب" : "Complete order";
             case CANCEL: return arabic ? "إلغاء" : "Cancel";
             case RETURN: return arabic ? "إرجاع" : "Return";
             default: return name();

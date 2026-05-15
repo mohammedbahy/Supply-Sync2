@@ -36,13 +36,14 @@ public final class OrderStateMachine {
         put(table, OrderStatuses.PARTIALLY_SHIPPED, OrderTransition.SHIP_PARTIAL, OrderStatuses.PARTIALLY_SHIPPED);
         put(table, OrderStatuses.PARTIALLY_SHIPPED, OrderTransition.SHIP, OrderStatuses.IN_TRANSIT);
         put(table, OrderStatuses.PARTIALLY_SHIPPED, OrderTransition.CANCEL, OrderStatuses.CANCELLED);
+        put(table, OrderStatuses.PARTIALLY_SHIPPED, OrderTransition.PLACE_ON_HOLD, OrderStatuses.ON_HOLD);
 
         put(table, OrderStatuses.IN_TRANSIT, OrderTransition.DELIVER, OrderStatuses.DELIVERED);
+        put(table, OrderStatuses.IN_TRANSIT, OrderTransition.PLACE_ON_HOLD, OrderStatuses.ON_HOLD);
         put(table, OrderStatuses.IN_TRANSIT, OrderTransition.CANCEL, OrderStatuses.CANCELLED);
 
         put(table, OrderStatuses.DELIVERED, OrderTransition.RETURN, OrderStatuses.RETURNED);
 
-        // Legacy rows still in DB
         put(table, OrderStatuses.PENDING, OrderTransition.APPROVE, OrderStatuses.APPROVED);
         put(table, OrderStatuses.PENDING, OrderTransition.CANCEL, OrderStatuses.CANCELLED);
         put(table, OrderStatuses.PENDING, OrderTransition.PLACE_ON_HOLD, OrderStatuses.ON_HOLD);
@@ -75,7 +76,46 @@ public final class OrderStateMachine {
         return map;
     }
 
+    public boolean isAdmin(User actor) {
+        return actor != null
+                && actor.getRole() != null
+                && "ADMIN".equalsIgnoreCase(actor.getRole());
+    }
+
+    /** Repairs DB/UI mismatch: status_before_hold set but status not ON_HOLD. */
+    public void repairHoldState(Order order) {
+        if (order == null) {
+            return;
+        }
+        if (order.getStatusBeforeHold() != null
+                && !order.getStatusBeforeHold().isBlank()
+                && !OrderStatuses.ON_HOLD.equals(order.getStatus())) {
+            order.internalSetWorkflowStatus(OrderStatuses.ON_HOLD);
+        }
+    }
+
+    public boolean isTransitionPermitted(Order order, User actor, OrderTransition transition) {
+        if (isAdmin(actor)) {
+            return true;
+        }
+        return getAllowedTransitions(order, actor).contains(transition);
+    }
+
     public String resolveTargetStatus(Order order, OrderTransition transition) {
+        return resolveTargetStatus(order, transition, null);
+    }
+
+    public String resolveTargetStatus(Order order, OrderTransition transition, User actor) {
+        repairHoldState(order);
+        if (isAdmin(actor)) {
+            return resolveAdminTargetStatus(order, transition);
+        }
+        if (transition == OrderTransition.RELEASE_HOLD
+                && OrderStatuses.ON_HOLD.equals(order.getStatus())
+                && order.getStatusBeforeHold() != null
+                && !order.getStatusBeforeHold().isBlank()) {
+            return order.getStatusBeforeHold();
+        }
         String current = order.getStatus();
         Map<OrderTransition, String> row = TRANSITION_TABLE.get(current);
         if (row == null) {
@@ -89,9 +129,41 @@ public final class OrderStateMachine {
         return target;
     }
 
+    private String resolveAdminTargetStatus(Order order, OrderTransition transition) {
+        String status = order.getStatus();
+
+        if (transition == OrderTransition.RELEASE_HOLD) {
+            if (OrderStatuses.ON_HOLD.equals(status)) {
+                String resume = order.getStatusBeforeHold();
+                return resume != null && !resume.isBlank() ? resume : OrderStatuses.APPROVED;
+            }
+            if (order.getStatusBeforeHold() != null && !order.getStatusBeforeHold().isBlank()) {
+                return order.getStatusBeforeHold();
+            }
+            return status;
+        }
+
+        if (transition == OrderTransition.PLACE_ON_HOLD) {
+            if (OrderStatuses.ON_HOLD.equals(status)) {
+                return status;
+            }
+            return OrderStatuses.ON_HOLD;
+        }
+
+        try {
+            return resolveTargetStatus(order, transition);
+        } catch (IllegalStateException ex) {
+            return status;
+        }
+    }
+
     public Set<OrderTransition> getAllowedTransitions(Order order, User actor) {
         if (actor == null || actor.getRole() == null) {
             return Collections.emptySet();
+        }
+        repairHoldState(order);
+        if (isAdmin(actor)) {
+            return adminAllowedTransitions(order);
         }
         String current = order.getStatus();
         Map<OrderTransition, String> row = TRANSITION_TABLE.get(current);
@@ -111,8 +183,53 @@ public final class OrderStateMachine {
         return result;
     }
 
+    private Set<OrderTransition> adminAllowedTransitions(Order order) {
+        String current = order.getStatus();
+        EnumSet<OrderTransition> result = EnumSet.noneOf(OrderTransition.class);
+        Map<OrderTransition, String> row = TRANSITION_TABLE.get(current);
+        if (row != null) {
+            result.addAll(row.keySet());
+        }
+        if (order.getStatusBeforeHold() != null && !order.getStatusBeforeHold().isBlank()) {
+            result.add(OrderTransition.RELEASE_HOLD);
+        }
+        if (!isTerminal(current)) {
+            result.add(OrderTransition.CANCEL);
+        }
+        return result;
+    }
+
+    private static boolean isTerminal(String status) {
+        return OrderStatuses.DELIVERED.equals(status)
+                || OrderStatuses.CANCELLED.equals(status)
+                || OrderStatuses.RETURNED.equals(status);
+    }
+
     public void applyTransition(Order order, OrderTransition transition) {
-        String target = resolveTargetStatus(order, transition);
-        order.internalSetWorkflowStatus(target);
+        applyTransition(order, transition, null);
+    }
+
+    public void applyTransition(Order order, OrderTransition transition, User actor) {
+        repairHoldState(order);
+        String from = order.getStatus();
+
+        if (transition == OrderTransition.PLACE_ON_HOLD) {
+            if (OrderStatuses.ON_HOLD.equals(from)) {
+                if (!isAdmin(actor)) {
+                    throw new IllegalStateException("Order is already on hold");
+                }
+                return;
+            }
+            order.setStatusBeforeHold(from);
+        }
+
+        String target = resolveTargetStatus(order, transition, actor);
+
+        if (transition == OrderTransition.RELEASE_HOLD) {
+            order.setStatusBeforeHold(null);
+        }
+        if (!target.equals(from)) {
+            order.internalSetWorkflowStatus(target);
+        }
     }
 }

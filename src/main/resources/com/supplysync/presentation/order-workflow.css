@@ -56,3 +56,66 @@
     -fx-background-color: #ede9fe;
     -fx-text-fill: #5b21b6;
 }
+
+.workflow-section-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #1d4e89;
+    -fx-padding: 8 0 4 0;
+}
+
+.workflow-hint {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6b7280;
+}
+
+.workflow-btn-complete {
+    -fx-background-color: #16a34a;
+    -fx-text-fill: white;
+    -fx-font-weight: 600;
+    -fx-background-radius: 8;
+    -fx-padding: 10 16 10 16;
+}
+
+.workflow-btn-complete:hover {
+    -fx-background-color: #15803d;
+}
+
+.workflow-btn-hold {
+    -fx-background-color: #fef9c3;
+    -fx-text-fill: #854d0e;
+    -fx-font-weight: 600;
+    -fx-background-radius: 8;
+    -fx-padding: 10 16 10 16;
+    -fx-border-color: #ca8a04;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+}
+
+.workflow-btn-hold:hover {
+    -fx-background-color: #fef08a;
+}
+
+.workflow-holding-banner {
+    -fx-background-color: #fef9c3;
+    -fx-text-fill: #854d0e;
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-padding: 12 14 12 14;
+    -fx-background-radius: 8;
+    -fx-border-color: #ca8a04;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+}
+
+.workflow-btn-release {
+    -fx-background-color: #1d4e89;
+    -fx-text-fill: white;
+    -fx-font-weight: 600;
+    -fx-background-radius: 8;
+    -fx-padding: 10 16 10 16;
+}
+
+.workflow-btn-release:hover {
+    -fx-background-color: #163a66;
+}

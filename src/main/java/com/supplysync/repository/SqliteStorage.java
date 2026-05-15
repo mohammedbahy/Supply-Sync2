@@ -116,6 +116,7 @@ public class SqliteStorage implements Storage {
                     + "FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE)");
             ensureOrdersPlacedAtColumn(c);
             ensureOrdersCustomerCountryColumn(c);
+            ensureOrdersStatusBeforeHoldColumn(c);
             ensureUserOrderPrefsColumns(c);
         }
     }
@@ -148,6 +149,17 @@ public class SqliteStorage implements Storage {
     private void ensureOrdersPlacedAtColumn(Connection c) throws SQLException {
         try (Statement st = c.createStatement()) {
             st.execute("ALTER TABLE orders ADD COLUMN placed_at TEXT");
+        } catch (SQLException e) {
+            String msg = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
+            if (!msg.contains("duplicate column") && !msg.contains("already exists")) {
+                throw e;
+            }
+        }
+    }
+
+    private void ensureOrdersStatusBeforeHoldColumn(Connection c) throws SQLException {
+        try (Statement st = c.createStatement()) {
+            st.execute("ALTER TABLE orders ADD COLUMN status_before_hold TEXT");
         } catch (SQLException e) {
             String msg = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
             if (!msg.contains("duplicate column") && !msg.contains("already exists")) {
@@ -277,7 +289,7 @@ public class SqliteStorage implements Storage {
                 }
                 try (PreparedStatement ins = c.prepareStatement(
                         "INSERT OR REPLACE INTO orders (id,marketer_id,customer_name,customer_phone,customer_country,customer_address,"
-                                + "status,total_amount,commission,order_date,placed_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)")) {
+                                + "status,total_amount,commission,order_date,placed_at,status_before_hold) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)")) {
                     ins.setString(1, order.getId());
                     if (order.getMarketer() != null) {
                         ins.setString(2, order.getMarketer().getId());
@@ -296,6 +308,11 @@ public class SqliteStorage implements Storage {
                         ins.setString(11, order.getPlacedAt().format(ISO_DT));
                     } else {
                         ins.setNull(11, Types.VARCHAR);
+                    }
+                    if (order.getStatusBeforeHold() != null && !order.getStatusBeforeHold().isBlank()) {
+                        ins.setString(12, order.getStatusBeforeHold());
+                    } else {
+                        ins.setNull(12, Types.VARCHAR);
                     }
                     ins.executeUpdate();
                 }
@@ -335,7 +352,7 @@ public class SqliteStorage implements Storage {
              Statement s = c.createStatement();
              ResultSet rs = s.executeQuery(
                      "SELECT o.id,o.marketer_id,o.customer_name,o.customer_phone,o.customer_country,o.customer_address,"
-                             + "o.status,o.total_amount,o.commission,o.order_date,o.placed_at,m.name AS marketer_name "
+                             + "o.status,o.total_amount,o.commission,o.order_date,o.placed_at,o.status_before_hold,m.name AS marketer_name "
                              + "FROM orders o LEFT JOIN marketers m ON o.marketer_id = m.id "
                              + "ORDER BY o.order_date DESC, o.id DESC")) {
             while (rs.next()) {
@@ -350,12 +367,7 @@ public class SqliteStorage implements Storage {
                 order.setCustomerPhone(rs.getString("customer_phone"));
                 order.setCustomerCountry(rs.getString("customer_country"));
                 order.setCustomerAddress(rs.getString("customer_address"));
-                String rawStatus = rs.getString("status");
-                if (OrderStatuses.APPROVED.equals(rawStatus)) {
-                    OrderStatusHydrator.hydrate(order, OrderStatuses.IN_TRANSIT);
-                } else {
-                    OrderStatusHydrator.hydrate(order, rawStatus);
-                }
+                OrderStatusHydrator.hydrate(order, rs.getString("status"));
                 order.setTotalAmount(rs.getDouble("total_amount"));
                 order.setCommission(rs.getDouble("commission"));
                 String d = rs.getString("order_date");
@@ -367,6 +379,10 @@ public class SqliteStorage implements Storage {
                     order.setPlacedAt(LocalDateTime.parse(pa, ISO_DT));
                 } else {
                     order.setPlacedAt(null);
+                }
+                String beforeHold = rs.getString("status_before_hold");
+                if (beforeHold != null && !beforeHold.isBlank()) {
+                    order.setStatusBeforeHold(beforeHold);
                 }
                 loadOrderLines(c, order);
                 list.add(order);
