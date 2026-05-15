@@ -27,14 +27,14 @@ public class MarketersController extends BaseScreenController {
 
     @FXML
     public void initialize() {
-        if (orderFacade != null) {
+        if (orders() != null) {
             renderMarketers();
         }
     }
 
     @Override
-    public void setOrderFacade(com.supplysync.facade.OrderFacade orderFacade) {
-        super.setOrderFacade(orderFacade);
+    public void setApplicationContext(com.supplysync.facade.ApplicationContext app) {
+        super.setApplicationContext(app);
         renderMarketers();
     }
 
@@ -58,7 +58,7 @@ public class MarketersController extends BaseScreenController {
     }
 
     private void renderMarketers() {
-        if (marketersTable == null || orderFacade == null) {
+        if (marketersTable == null || orders() == null) {
             return;
         }
 
@@ -70,7 +70,7 @@ public class MarketersController extends BaseScreenController {
         }
 
         selectedUser = null;
-        List<User> users = orderFacade.getAllUsers();
+        List<User> users = auth().getAllUsers();
         for (User user : users) {
             if ("MARKETER".equalsIgnoreCase(user.getRole())) {
                 marketersTable.getChildren().add(createMarketerRow(user));
@@ -179,7 +179,7 @@ public class MarketersController extends BaseScreenController {
                 return;
             }
             String email = fields.emailField.getText().trim();
-            if (orderFacade.emailTakenByOtherUser(email, null)) {
+            if (auth().emailTakenByOtherUser(email, null)) {
                 showAlert(Alert.AlertType.ERROR, "Error",
                         LanguageManager.isArabic() ? "البريد مستخدم بالفعل." : "Email already registered.");
                 return;
@@ -193,8 +193,8 @@ public class MarketersController extends BaseScreenController {
             newUser.setRole("MARKETER");
 
             try {
-                orderFacade.register(newUser);
-                orderFacade.addMarketer(new Marketer(newUser.getId(), newUser.getName()));
+                auth().register(newUser);
+                auth().addMarketer(new Marketer(newUser.getId(), newUser.getName()));
                 renderMarketers();
                 showAlert(Alert.AlertType.INFORMATION, "Success",
                         LanguageManager.isArabic() ? "تم إضافة المسوق." : "Marketer added successfully.");
@@ -238,7 +238,7 @@ public class MarketersController extends BaseScreenController {
             }
 
             String email = fields.emailField.getText().trim();
-            if (orderFacade.emailTakenByOtherUser(email, user.getId())) {
+            if (auth().emailTakenByOtherUser(email, user.getId())) {
                 showAlert(Alert.AlertType.ERROR, "Error",
                         LanguageManager.isArabic() ? "البريد مستخدم بالفعل." : "Email already in use.");
                 return;
@@ -249,8 +249,8 @@ public class MarketersController extends BaseScreenController {
             if (newPassword != null && !newPassword.isEmpty()) {
                 user.setPassword(newPassword);
             }
-            orderFacade.saveUser(user);
-            orderFacade.addMarketer(new Marketer(user.getId(), user.getName()));
+            auth().saveUser(user);
+            auth().addMarketer(new Marketer(user.getId(), user.getName()));
             renderMarketers();
             showAlert(Alert.AlertType.INFORMATION, "Success",
                     LanguageManager.isArabic() ? "تم تحديث بيانات المسوق." : "Marketer updated.");
@@ -271,7 +271,7 @@ public class MarketersController extends BaseScreenController {
     }
 
     private boolean isAdmin() {
-        User u = orderFacade != null ? orderFacade.getCurrentUser() : null;
+        User u = auth() != null ? auth().getCurrentUser() : null;
         return u != null && "ADMIN".equalsIgnoreCase(u.getRole());
     }
 

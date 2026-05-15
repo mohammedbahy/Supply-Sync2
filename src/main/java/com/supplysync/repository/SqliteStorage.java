@@ -6,6 +6,7 @@ import com.supplysync.models.Message;
 import com.supplysync.models.Order;
 import com.supplysync.models.Product;
 import com.supplysync.models.User;
+import com.supplysync.domain.order.OrderStatusHydrator;
 import com.supplysync.models.OrderStatuses;
 import com.supplysync.models.OrderStatusHistoryEntry;
 
@@ -351,9 +352,9 @@ public class SqliteStorage implements Storage {
                 order.setCustomerAddress(rs.getString("customer_address"));
                 String rawStatus = rs.getString("status");
                 if (OrderStatuses.APPROVED.equals(rawStatus)) {
-                    order.setStatus(OrderStatuses.IN_TRANSIT);
+                    OrderStatusHydrator.hydrate(order, OrderStatuses.IN_TRANSIT);
                 } else {
-                    order.setStatus(rawStatus);
+                    OrderStatusHydrator.hydrate(order, rawStatus);
                 }
                 order.setTotalAmount(rs.getDouble("total_amount"));
                 order.setCommission(rs.getDouble("commission"));
@@ -685,6 +686,19 @@ public class SqliteStorage implements Storage {
         } catch (SQLException e) {
             throw new IllegalStateException("deleteMarketerOrderDraft failed", e);
         }
+    }
+
+    @Override
+    public void appendStatusHistory(String orderId, String fromStatus, String toStatus, String transition, String actorUserId) {
+        OrderStatusHistoryEntry e = new OrderStatusHistoryEntry();
+        e.setOrderId(orderId);
+        e.setFromStatus(fromStatus);
+        e.setToStatus(toStatus);
+        e.setTransitionName(transition);
+        e.setActorId(actorUserId);
+        e.setActorName("System"); // fallback
+        e.setCreatedAt(LocalDateTime.now());
+        appendOrderStatusHistory(e);
     }
 
     @Override

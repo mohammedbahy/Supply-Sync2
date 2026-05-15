@@ -3,7 +3,10 @@ package com.supplysync.presentation;
 import com.supplysync.models.Order;
 import com.supplysync.models.OrderStatuses;
 import com.supplysync.models.Product;
-import com.supplysync.workflow.OrderEventBus;
+import com.supplysync.domain.order.event.OrderEventBus;
+import com.supplysync.domain.order.event.OrderDomainListener;
+import com.supplysync.domain.order.event.OrderStatusChangedEvent;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
@@ -29,24 +32,29 @@ public class OrdersManagementController extends BaseScreenController {
     @FXML private Label pageSubtitle;
 
     private Order selectedOrder;
-    private final OrderEventBus.OrderChangeListener refreshListener = orderId -> {
-        renderOrders();
-        if (selectedOrder != null && orderId != null && orderId.equals(selectedOrder.getId())) {
-            orderFacade.findOrderById(orderId).ifPresent(this::showOrderDetails);
-        }
+    private final OrderDomainListener refreshListener = event -> {
+        Platform.runLater(() -> {
+            renderOrders();
+            if (selectedOrder != null && event.getOrder() != null && event.getOrder().getId().equals(selectedOrder.getId())) {
+                orders().findOrderById(event.getOrder().getId()).ifPresent(this::showOrderDetails);
+            }
+        });
     };
 
     @FXML
     public void initialize() {
-        if (orderFacade != null) {
-            renderOrders();
-        }
+        // initialization logic if any
     }
 
     @Override
-    public void setOrderFacade(com.supplysync.facade.OrderFacade orderFacade) {
-        super.setOrderFacade(orderFacade);
-        OrderEventBus.getInstance().subscribe(refreshListener);
+    public void setApplicationContext(com.supplysync.facade.ApplicationContext app) {
+        if (this.app != null && this.app.eventBus() != null) {
+            this.app.eventBus().unsubscribe(refreshListener);
+        }
+        super.setApplicationContext(app);
+        if (app != null && app.eventBus() != null) {
+            app.eventBus().subscribe(refreshListener);
+        }
         renderOrders();
     }
 
@@ -62,7 +70,7 @@ public class OrdersManagementController extends BaseScreenController {
     }
 
     private void renderOrders() {
-        if (ordersTable == null || orderFacade == null || ordersTable.getChildren().size() < 2) {
+        if (ordersTable == null || orders() == null || ordersTable.getChildren().size() < 2) {
             return;
         }
 
@@ -71,8 +79,8 @@ public class OrdersManagementController extends BaseScreenController {
         ordersTable.getChildren().clear();
         ordersTable.getChildren().addAll(header, sep);
 
-        List<Order> orders = orderFacade.getAllOrders();
-        for (Order order : orders) {
+        List<Order> ordersList = orders().getAllOrders();
+        for (Order order : ordersList) {
             ordersTable.getChildren().add(createOrderRow(order));
         }
     }
@@ -150,14 +158,14 @@ public class OrdersManagementController extends BaseScreenController {
                 }
             }
 
-            if (workflowActionsBox != null && orderFacade != null && order.getId() != null) {
+            if (workflowActionsBox != null && orders() != null && order.getId() != null) {
                 OrderWorkflowUiHelper.rebuildWorkflowButtons(
                         workflowActionsBox,
                         order,
-                        orderFacade,
+                        orders(),
                         () -> {
                             renderOrders();
-                            orderFacade.findOrderById(order.getId()).ifPresent(o -> {
+                            orders().findOrderById(order.getId()).ifPresent(o -> {
                                 selectedOrder = o;
                                 showOrderDetails(o);
                             });

@@ -47,15 +47,6 @@ public class Order {
         return workflowStatus;
     }
 
-    /**
-     * @deprecated Status changes must go through {@link com.supplysync.services.order.OrderWorkflowService}.
-     */
-    @Deprecated
-    public void setStatus(String status) {
-        throw new UnsupportedOperationException(
-                "Direct setStatus is disabled. Use OrderWorkflowService.executeTransition().");
-    }
-
     /** Repository hydration only — called from {@link com.supplysync.domain.order.OrderStatusHydrator}. */
     public void internalSetWorkflowStatus(String status) {
         this.workflowStatus = status != null ? OrderStatuses.normalizeWorkflow(status) : OrderStatuses.AWAITING_APPROVAL;
@@ -214,26 +205,4 @@ public class Order {
         return LocalDateTime.now();
     }
 
-    /**
-     * @deprecated Use workflow transitions instead of legacy state methods.
-     */
-    @Deprecated
-    public void approve() {
-        throw new UnsupportedOperationException("Use OrderWorkflowService.executeTransition(APPROVE)");
-    }
-
-    @Deprecated
-    public void ship() {
-        throw new UnsupportedOperationException("Use OrderWorkflowService.executeTransition(SHIP)");
-    }
-
-    @Deprecated
-    public void deliver() {
-        throw new UnsupportedOperationException("Use OrderWorkflowService.executeTransition(DELIVER)");
-    }
-
-    @Deprecated
-    public void cancel() {
-        throw new UnsupportedOperationException("Use OrderWorkflowService.executeTransition(CANCEL)");
-    }
 }

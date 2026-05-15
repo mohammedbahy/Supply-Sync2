@@ -11,7 +11,7 @@ import com.supplysync.models.OrderStatusHistoryEntry;
 import java.util.List;
 import java.util.Optional;
 
-public interface Storage {
+public interface Storage extends OrderRepository, ProductRepository, UserRepository, MarketerRepository, MessageRepository, DraftRepository, OrderStatusHistoryRepository {
     void saveOrder(Order order);
     Optional<Order> findOrderById(String id);
     List<Order> findAllOrders();

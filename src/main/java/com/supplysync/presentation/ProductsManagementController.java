@@ -161,7 +161,7 @@ public class ProductsManagementController extends BaseScreenController {
         grid.add(idField, 1, 0);
         grid.add(new Label("Name:"), 0, 1);
         grid.add(nameField, 1, 1);
-        CategoryPickerHelper.addCategoryRow(grid, 2, orderFacade.getCatalog(), null);
+        CategoryPickerHelper.addCategoryRow(grid, 2, catalog().getCatalog(), null);
         grid.add(new Label("Quantity:"), 0, 3);
         grid.add(qtyField, 1, 3);
         grid.add(new Label("Price:"), 0, 4);
@@ -230,7 +230,7 @@ public class ProductsManagementController extends BaseScreenController {
         grid.add(idDisplay, 1, 0);
         grid.add(new Label("Name:"), 0, 1);
         grid.add(nameField, 1, 1);
-        CategoryPickerHelper.addCategoryRow(grid, 2, orderFacade.getCatalog(), selected.getCategory());
+        CategoryPickerHelper.addCategoryRow(grid, 2, catalog().getCatalog(), selected.getCategory());
         grid.add(new Label("Quantity:"), 0, 3);
         grid.add(qtyField, 1, 3);
         grid.add(new Label("Price:"), 0, 4);

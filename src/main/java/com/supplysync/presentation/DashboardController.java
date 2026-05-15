@@ -5,10 +5,11 @@ import com.supplysync.dashboard.DashboardUiHelper;
 import com.supplysync.facade.ApplicationContext;
 import com.supplysync.models.AdminDashboardStats;
 import com.supplysync.models.Order;
-import com.supplysync.patterns.behavioral.observer.OrderObserver;
+import com.supplysync.domain.order.event.OrderDomainListener;
+import com.supplysync.domain.order.event.OrderStatusChangedEvent;
 import javafx.animation.KeyFrame;
-import javafx.application.Platform;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -23,7 +24,7 @@ import java.io.IOException;
 /**
  * Admin dashboard: depends on {@link DashboardDataPort} (DIP); UI updates via {@link DashboardUiHelper} (SRP).
  */
-public class DashboardController extends BaseScreenController implements OrderObserver {
+public class DashboardController extends BaseScreenController {
     private static final Duration DASHBOARD_POLL_INTERVAL = Duration.seconds(60);
 
     @FXML
@@ -58,6 +59,7 @@ public class DashboardController extends BaseScreenController implements OrderOb
     private DashboardDataPort dashboardPort;
     private Timeline dashboardPoll;
     private boolean scenePollHookInstalled;
+    private final OrderDomainListener orderListener = this::onOrderUpdated;
 
     @FXML
     public void initialize() {
@@ -121,20 +123,19 @@ public class DashboardController extends BaseScreenController implements OrderOb
 
     @Override
     public void setApplicationContext(ApplicationContext app) {
-        if (orders() != null) {
-            orders().removeOrderObserver(this);
+        if (app != null && app.eventBus() != null) {
+            app.eventBus().unsubscribe(orderListener);
         }
         super.setApplicationContext(app);
         this.dashboardPort = app == null ? null : app.dashboardData();
-        if (orders() != null) {
-            orders().addOrderObserver(this);
+        if (app != null && app.eventBus() != null) {
+            app.eventBus().subscribe(orderListener);
         }
         restartDashboardPolling();
         updateStatsFromPort();
     }
 
-    @Override
-    public void onOrderUpdated(Order order) {
+    public void onOrderUpdated(OrderStatusChangedEvent event) {
         Platform.runLater(this::updateStatsFromPort);
     }
 

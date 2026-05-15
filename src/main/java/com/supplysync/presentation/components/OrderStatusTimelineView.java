@@ -3,7 +3,7 @@ package com.supplysync.presentation.components;
 import com.supplysync.models.Order;
 import com.supplysync.models.OrderStatusHistoryEntry;
 import com.supplysync.models.OrderStatuses;
-import com.supplysync.workflow.OrderTransition;
+import com.supplysync.domain.order.OrderTransition;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;

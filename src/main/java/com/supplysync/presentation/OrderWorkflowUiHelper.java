@@ -2,8 +2,9 @@ package com.supplysync.presentation;
 
 import com.supplysync.facade.OrderFacade;
 import com.supplysync.models.Order;
-import com.supplysync.workflow.OrderEventBus;
-import com.supplysync.workflow.OrderTransition;
+import com.supplysync.domain.order.OrderTransition;
+import com.supplysync.domain.order.event.OrderEventBus;
+import com.supplysync.domain.order.event.OrderDomainListener;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
@@ -25,7 +26,7 @@ final class OrderWorkflowUiHelper {
         }
         container.getChildren().clear();
         boolean arabic = LanguageManager.isArabic();
-        for (OrderTransition transition : facade.getAllowedTransitions(order.getId())) {
+        for (OrderTransition transition : facade.getAllowedTransitions(order)) {
             Button btn = new Button(transition.displayLabel(arabic));
             btn.getStyleClass().add(transition == OrderTransition.CANCEL ? "danger-link" : "primary-btn");
             if (transition != OrderTransition.CANCEL) {
@@ -51,16 +52,13 @@ final class OrderWorkflowUiHelper {
         }
     }
 
-    static void subscribeRefresh(String orderId, Consumer<String> refresher, OrderEventBus.OrderChangeListener holder) {
-        OrderEventBus.OrderChangeListener listener = changedId -> {
-            if (orderId == null || orderId.equals(changedId)) {
-                refresher.accept(changedId);
+    static void subscribeRefresh(String orderId, Consumer<String> refresher, OrderEventBus eventBus) {
+        OrderDomainListener listener = event -> {
+            if (orderId == null || orderId.equals(event.getOrder().getId())) {
+                refresher.accept(event.getOrder().getId());
             }
         };
-        OrderEventBus.getInstance().subscribe(listener);
-        if (holder != null) {
-            // caller stores listener for unsubscribe — use array trick in controller
-        }
+        eventBus.subscribe(listener);
     }
 
     private static void showError(String title, String content) {

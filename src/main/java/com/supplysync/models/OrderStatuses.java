@@ -10,20 +10,27 @@ public final class OrderStatuses {
     public static final String CANCELLED = "CANCELLED";
     public static final String ON_HOLD = "ON_HOLD";
     public static final String PARTIALLY_SHIPPED = "PARTIALLY_SHIPPED";
+    public static final String RETURNED = "RETURNED";
     /** Legacy DB value — treated as {@link #IN_TRANSIT} in UI and logic. */
     public static final String APPROVED = "APPROVED";
+    /** Legacy alias for PENDING. */
+    public static final String AWAITING_APPROVAL = PENDING;
 
     private OrderStatuses() {}
 
     /** Normalize legacy status for comparisons. */
     public static String normalize(String status) {
-        if (status == null) {
+        if (status == null || AWAITING_APPROVAL.equals(status)) {
             return PENDING;
         }
         if (APPROVED.equals(status)) {
             return IN_TRANSIT;
         }
         return status;
+    }
+    
+    public static String normalizeWorkflow(String status) {
+        return normalize(status);
     }
 
     public static String displayLabel(String status, boolean arabic) {

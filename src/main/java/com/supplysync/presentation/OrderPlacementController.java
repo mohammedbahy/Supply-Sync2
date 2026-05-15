@@ -38,7 +38,7 @@ public class OrderPlacementController extends BaseScreenController {
 
         // Process order via facade
         if (orders() != null) {
-            orders().processOrder(order);
+            orders().submitOrder(order);
             showAlert("Success", "Order confirmed successfully for " + customerName);
         } else {
             showAlert("Error", "Backend service not available.");

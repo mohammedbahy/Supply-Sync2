@@ -1,7 +1,9 @@
 package com.supplysync.facade;
 
 import com.supplysync.models.User;
+import com.supplysync.models.Marketer;
 import com.supplysync.repository.UserRepository;
+import com.supplysync.repository.MarketerRepository;
 import com.supplysync.services.auth.AuthService;
 
 import java.util.List;
@@ -13,10 +15,12 @@ import java.util.Optional;
 public final class AuthFacade {
     private final AuthService authService;
     private final UserRepository users;
+    private final MarketerRepository marketers;
 
     public AuthFacade(AuthService authService, UserRepository users) {
         this.authService = authService;
         this.users = users;
+        this.marketers = (MarketerRepository) users; // Storage implements both
     }
 
     public Optional<User> login(String email, String password) {
@@ -41,6 +45,21 @@ public final class AuthFacade {
 
     public List<User> getAllUsers() {
         return users.findAllUsers();
+    }
+
+    public boolean emailTakenByOtherUser(String email, String excludeUserId) {
+        if (email == null) return false;
+        return users.findUserByEmail(email.trim())
+                .filter(u -> excludeUserId == null || !excludeUserId.equals(u.getId()))
+                .isPresent();
+    }
+
+    public void saveUser(User user) {
+        users.saveUser(user);
+    }
+
+    public void addMarketer(Marketer marketer) {
+        marketers.saveMarketer(marketer);
     }
 
     public void persistCheckoutContactForCurrentUser(String customerName, String phone, String country, String address) {
