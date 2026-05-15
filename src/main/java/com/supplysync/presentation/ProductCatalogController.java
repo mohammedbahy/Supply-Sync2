@@ -25,10 +25,10 @@ public class ProductCatalogController extends BaseScreenController {
     }
 
     @Override
-    public void setOrderFacade(com.supplysync.facade.OrderFacade orderFacade) {
-        super.setOrderFacade(orderFacade);
-        if (orderFacade.getCurrentUser() != null) {
-            userNameLabel.setText(orderFacade.getCurrentUser().getName());
+    public void setApplicationContext(com.supplysync.facade.ApplicationContext app) {
+        super.setApplicationContext(app);
+        if (auth() != null && auth().getCurrentUser() != null) {
+            userNameLabel.setText(auth().getCurrentUser().getName());
         }
         renderProducts();
     }
@@ -52,10 +52,10 @@ public class ProductCatalogController extends BaseScreenController {
     }
 
     private void renderProducts() {
-        if (productFlowPane == null || orderFacade == null) return;
+        if (productFlowPane == null || catalog() == null) return;
 
         productFlowPane.getChildren().clear();
-        List<Product> products = orderFacade.getCatalog();
+        List<Product> products = catalog().getCatalog();
 
         for (Product product : products) {
             String translatedCat = LanguageManager.get(product.getCategory());
@@ -91,7 +91,7 @@ public class ProductCatalogController extends BaseScreenController {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         int warehouse = product.getQuantity();
-        int remaining = orderFacade.availableUnitsToAddFromCatalog(product);
+        int remaining = catalog().availableUnitsToAddFromCatalog(product);
         Label unitsLabel = new Label(remaining + "/" + warehouse + " " + LanguageManager.get("Units"));
         unitsLabel.getStyleClass().add("units");
         priceBox.getChildren().addAll(priceLabel, spacer, unitsLabel);
@@ -103,7 +103,7 @@ public class ProductCatalogController extends BaseScreenController {
         qtySpinner.setPrefWidth(70);
         qtySpinner.getStyleClass().add("qty-spinner");
         qtySpinner.valueProperty().addListener((obs, o, n) -> {
-            int max = orderFacade.availableUnitsToAddFromCatalog(product);
+            int max = catalog().availableUnitsToAddFromCatalog(product);
             if (n != null && n > max) {
                 qtySpinner.getValueFactory().setValue(max);
             }
@@ -115,7 +115,7 @@ public class ProductCatalogController extends BaseScreenController {
             addBtn.getStyleClass().add("primary-mini");
             addBtn.setOnAction(e -> {
                 int requestedQty = qtySpinner.getValue();
-                int maxAdd = orderFacade.availableUnitsToAddFromCatalog(product);
+                int maxAdd = catalog().availableUnitsToAddFromCatalog(product);
                 if (requestedQty <= 0) {
                     return;
                 }
@@ -128,7 +128,7 @@ public class ProductCatalogController extends BaseScreenController {
                     return;
                 }
                 for (int i = 0; i < requestedQty; i++) {
-                    if (!orderFacade.addToCart(product)) {
+                    if (!catalog().addToCart(product)) {
                         break;
                     }
                 }

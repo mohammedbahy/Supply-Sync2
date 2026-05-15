@@ -17,7 +17,8 @@ public class DefaultOrderService implements OrderService {
         storage.saveOrder(order);
     }
 
-    public List<Order> getAllOrders() {
+    @Override
+    public List<Order> findAllOrders() {
         return storage.findAllOrders();
     }
 }

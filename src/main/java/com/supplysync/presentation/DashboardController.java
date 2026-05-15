@@ -2,8 +2,7 @@ package com.supplysync.presentation;
 
 import com.supplysync.dashboard.DashboardDataPort;
 import com.supplysync.dashboard.DashboardUiHelper;
-import com.supplysync.dashboard.OrderFacadeDashboardDataAdapter;
-import com.supplysync.facade.OrderFacade;
+import com.supplysync.facade.ApplicationContext;
 import com.supplysync.models.AdminDashboardStats;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -149,9 +148,9 @@ public class DashboardController extends BaseScreenController {
     }
 
     @Override
-    public void setOrderFacade(OrderFacade orderFacade) {
-        this.dashboardPort = orderFacade == null ? null : new OrderFacadeDashboardDataAdapter(orderFacade);
-        super.setOrderFacade(orderFacade);
+    public void setApplicationContext(ApplicationContext app) {
+        super.setApplicationContext(app);
+        this.dashboardPort = app == null ? null : app.dashboardData();
         restartDashboardPolling();
     }
 
@@ -171,8 +170,8 @@ public class DashboardController extends BaseScreenController {
 
     private void updateStatsFromPort() {
         if (dashboardPort == null) {
-            if (orderFacade != null) {
-                dashboardPort = new OrderFacadeDashboardDataAdapter(orderFacade);
+            if (dashboard() != null) {
+                dashboardPort = dashboard();
             } else {
                 return;
             }

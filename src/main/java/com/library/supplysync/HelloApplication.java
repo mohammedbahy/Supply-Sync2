@@ -8,30 +8,22 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
-import com.supplysync.facade.OrderFacade;
-import com.supplysync.patterns.creational.factory.ServiceFactory;
+import com.supplysync.facade.ApplicationContext;
 import com.supplysync.presentation.BaseScreenController;
 import com.supplysync.presentation.ScreenNavigator;
 
 public class HelloApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
-        OrderFacade orderFacade = new OrderFacade(
-                ServiceFactory.createOrderService(),
-                ServiceFactory.createInventoryService(),
-                ServiceFactory.createDeliveryService(),
-                ServiceFactory.createNotificationService(),
-                ServiceFactory.createAuthService(),
-                ServiceFactory.getStorage()
-        );
-        ScreenNavigator.setOrderFacade(orderFacade);
+        ApplicationContext app = ApplicationContext.createDefault();
+        ScreenNavigator.setApplicationContext(app);
 
         FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("/com/supplysync/presentation/login-view.fxml"));
         Parent root = fxmlLoader.load();
-        
+
         Object controller = fxmlLoader.getController();
         if (controller instanceof BaseScreenController) {
-            ((BaseScreenController) controller).setOrderFacade(orderFacade);
+            ((BaseScreenController) controller).setApplicationContext(app);
         }
 
         Scene scene = new Scene(root, 1200, 760);

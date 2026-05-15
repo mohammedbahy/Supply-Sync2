@@ -1,19 +1,11 @@
 package com.supplysync.presentation;
 
-import com.supplysync.facade.OrderFacade;
-import com.supplysync.patterns.creational.factory.ServiceFactory;
+import com.supplysync.facade.ApplicationContext;
 
 public class Main {
     public static void main(String[] args) {
-        OrderFacade orderFacade = new OrderFacade(
-                ServiceFactory.createOrderService(),
-                ServiceFactory.createInventoryService(),
-                ServiceFactory.createDeliveryService(),
-                ServiceFactory.createNotificationService(),
-                ServiceFactory.createAuthService(),
-                ServiceFactory.getStorage()
-        );
-        UI ui = new UI(orderFacade);
+        ApplicationContext app = ApplicationContext.createDefault();
+        UI ui = new UI(app);
         ui.run();
     }
 }

@@ -32,8 +32,8 @@ public class NotificationsController extends BaseScreenController {
     }
 
     @Override
-    public void setOrderFacade(com.supplysync.facade.OrderFacade orderFacade) {
-        super.setOrderFacade(orderFacade);
+    public void setApplicationContext(com.supplysync.facade.ApplicationContext app) {
+        super.setApplicationContext(app);
         renderDailyReports();
     }
 
@@ -66,14 +66,14 @@ public class NotificationsController extends BaseScreenController {
                     : "Report date: " + today.format(df));
         }
 
-        if (orderFacade == null) {
+        if (orders() == null || catalog() == null || notifications() == null) {
             reportsContainer.getChildren().add(reportCard(
                     LanguageManager.isArabic() ? "لا بيانات" : "No data",
                     LanguageManager.isArabic() ? "لم يتم تحميل الخدمة." : "Service not available."));
             return;
         }
 
-        List<Order> todayOrders = orderFacade.getAllOrders().stream()
+        List<Order> todayOrders = orders().getAllOrders().stream()
                 .filter(o -> isOrderPlacedOn(o, today))
                 .collect(Collectors.toList());
 
@@ -119,7 +119,7 @@ public class NotificationsController extends BaseScreenController {
                 : String.format("Processing: %d%nIn transit: %d%nDelivered: %d%nCancelled: %d", pending, transit, delivered, cancelled);
         reportsContainer.getChildren().add(reportCard(statusTitle, statusBody));
 
-        List<Product> catalog = orderFacade.getCatalog();
+        List<Product> catalog = catalog().getCatalog();
         long low = catalog.stream().filter(p -> p.getQuantity() > 0 && p.getQuantity() < 100).count();
         long out = catalog.stream().filter(p -> p.getQuantity() == 0).count();
         int totalSkus = catalog.size();
@@ -135,7 +135,7 @@ public class NotificationsController extends BaseScreenController {
                 totalSkus, totalUnits, low, out);
         reportsContainer.getChildren().add(reportCard(invTitle, invBody));
 
-        List<Message> msgs = orderFacade.getAllMessages().stream()
+        List<Message> msgs = notifications().getAllMessages().stream()
                 .filter(m -> m.getCreatedAt() != null && m.getCreatedAt().toLocalDate().equals(today))
                 .collect(Collectors.toList());
         String msgTitle = LanguageManager.isArabic() ? "رسائل وإشعارات اليوم" : "Today's messages";

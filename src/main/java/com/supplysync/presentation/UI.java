@@ -1,12 +1,12 @@
 package com.supplysync.presentation;
 
-import com.supplysync.facade.OrderFacade;
+import com.supplysync.facade.ApplicationContext;
 
 public class UI {
-    private final OrderFacade orderFacade;
+    private final ApplicationContext app;
 
-    public UI(OrderFacade orderFacade) {
-        this.orderFacade = orderFacade;
+    public UI(ApplicationContext app) {
+        this.app = app;
     }
 
     public void run() {

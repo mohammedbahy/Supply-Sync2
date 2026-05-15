@@ -11,4 +11,5 @@ module com.library.supplysync {
     exports com.supplysync.facade;
     exports com.supplysync.dashboard;
     exports com.supplysync.models;
+    exports com.supplysync.repository;
 }

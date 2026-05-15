@@ -69,7 +69,7 @@ public class ForgotPasswordController extends BaseScreenController {
             return;
         }
 
-        boolean success = orderFacade.resetPassword(email, password);
+        boolean success = auth() != null && auth().resetPassword(email, password);
         if (success) {
             showAlert(Alert.AlertType.INFORMATION, "Success", "Password has been reset successfully.");
             openLogin(event);

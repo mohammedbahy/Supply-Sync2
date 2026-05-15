@@ -20,14 +20,14 @@ public class MarketersController extends BaseScreenController {
     @FXML private Button addMarketerBtn;
 
     public void initialize() {
-        if (orderFacade != null) {
+        if (auth() != null) {
             renderMarketers();
         }
     }
 
     @Override
-    public void setOrderFacade(com.supplysync.facade.OrderFacade orderFacade) {
-        super.setOrderFacade(orderFacade);
+    public void setApplicationContext(com.supplysync.facade.ApplicationContext app) {
+        super.setApplicationContext(app);
         renderMarketers();
     }
 
@@ -41,7 +41,7 @@ public class MarketersController extends BaseScreenController {
     }
 
     private void renderMarketers() {
-        if (marketersTable == null || orderFacade == null) return;
+        if (marketersTable == null || auth() == null) return;
         
         if (marketersTable.getChildren().size() > 2) {
             javafx.scene.Node header = marketersTable.getChildren().get(0);
@@ -51,7 +51,7 @@ public class MarketersController extends BaseScreenController {
         }
 
         // Get all registered users (customers)
-        List<User> users = orderFacade.getAllUsers();
+        List<User> users = auth().getAllUsers();
         for (User user : users) {
             // Skip admin users, show only marketers/customers
             if ("MARKETER".equals(user.getRole())) {

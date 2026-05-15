@@ -45,16 +45,19 @@ public class MarketingDashboardController extends BaseScreenController {
     }
 
     @Override
-    public void setOrderFacade(com.supplysync.facade.OrderFacade orderFacade) {
-        super.setOrderFacade(orderFacade);
-        if (orderFacade.getCurrentUser() != null) {
-            userNameLabel.setText(orderFacade.getCurrentUser().getName());
+    public void setApplicationContext(com.supplysync.facade.ApplicationContext app) {
+        super.setApplicationContext(app);
+        if (auth() != null && auth().getCurrentUser() != null) {
+            userNameLabel.setText(auth().getCurrentUser().getName());
         }
         updateDashboard();
     }
 
     private void updateDashboard() {
-        List<Order> allOrders = orderFacade.getMyOrders();
+        if (orders() == null) {
+            return;
+        }
+        List<Order> allOrders = orders().getMyOrders();
 
         totalOrdersLabel.setText(String.valueOf(allOrders.size()));
 
@@ -79,7 +82,7 @@ public class MarketingDashboardController extends BaseScreenController {
         renderTopSelling(allOrders);
 
         if (draftHintBox != null) {
-            boolean has = orderFacade.hasOrderDraft();
+            boolean has = drafts() != null && drafts().hasOrderDraft();
             draftHintBox.setVisible(has);
             draftHintBox.setManaged(has);
             if (draftHintLabel != null && has) {
@@ -138,7 +141,10 @@ public class MarketingDashboardController extends BaseScreenController {
             return;
         }
 
-        Map<String, Product> catalogById = orderFacade.getCatalog().stream()
+        if (catalog() == null) {
+            return;
+        }
+        Map<String, Product> catalogById = catalog().getCatalog().stream()
                 .collect(Collectors.toMap(Product::getId, p -> p, (a, b) -> a));
 
         for (Map.Entry<String, Integer> e : ranked) {

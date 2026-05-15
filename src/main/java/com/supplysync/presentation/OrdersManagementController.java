@@ -34,14 +34,14 @@ public class OrdersManagementController extends BaseScreenController {
     private Order selectedOrder;
 
     public void initialize() {
-        if (orderFacade != null) {
+        if (orders() != null) {
             renderOrders();
         }
     }
 
     @Override
-    public void setOrderFacade(com.supplysync.facade.OrderFacade orderFacade) {
-        super.setOrderFacade(orderFacade);
+    public void setApplicationContext(com.supplysync.facade.ApplicationContext app) {
+        super.setApplicationContext(app);
         renderOrders();
     }
 
@@ -66,7 +66,7 @@ public class OrdersManagementController extends BaseScreenController {
     }
 
     private void renderOrders() {
-        if (ordersTable == null || orderFacade == null) {
+        if (ordersTable == null || orders() == null) {
             return;
         }
 
@@ -75,7 +75,7 @@ public class OrdersManagementController extends BaseScreenController {
         ordersTable.getChildren().clear();
         ordersTable.getChildren().addAll(header, sep);
 
-        List<Order> orders = orderFacade.getAllOrders();
+        List<Order> orders = orders().getAllOrders();
         for (Order order : orders) {
             ordersTable.getChildren().add(createOrderRow(order));
         }
@@ -156,7 +156,7 @@ public class OrdersManagementController extends BaseScreenController {
         }
 
         selectedOrder.setStatus(OrderStatuses.IN_TRANSIT);
-        orderFacade.persistOrder(selectedOrder);
+        orders().persistOrder(selectedOrder);
 
         com.supplysync.models.Message message = new com.supplysync.models.Message();
         message.setId(UUID.randomUUID().toString());
@@ -166,7 +166,7 @@ public class OrdersManagementController extends BaseScreenController {
         message.setTitle("Order in transit");
         message.setContent("Your order " + selectedOrder.getId() + " is on the way.");
         message.setStatus(OrderStatuses.IN_TRANSIT);
-        orderFacade.sendMessage(message);
+        notifications().sendMessage(message);
 
         showAlert(Alert.AlertType.INFORMATION, LanguageManager.isArabic() ? "تم التحديث" : "Updated",
                 LanguageManager.isArabic() ? "تم وضع الطلب في حالة \"في الطريق\"." : "Order marked as in transit.");
@@ -185,7 +185,7 @@ public class OrdersManagementController extends BaseScreenController {
         }
 
         selectedOrder.setStatus(OrderStatuses.DELIVERED);
-        orderFacade.persistOrder(selectedOrder);
+        orders().persistOrder(selectedOrder);
 
         com.supplysync.models.Message message = new com.supplysync.models.Message();
         message.setId(UUID.randomUUID().toString());
@@ -195,7 +195,7 @@ public class OrdersManagementController extends BaseScreenController {
         message.setTitle("Order delivered");
         message.setContent("Your order " + selectedOrder.getId() + " has been delivered.");
         message.setStatus(OrderStatuses.DELIVERED);
-        orderFacade.sendMessage(message);
+        notifications().sendMessage(message);
 
         showAlert(Alert.AlertType.INFORMATION, LanguageManager.isArabic() ? "تم التسليم" : "Delivered",
                 LanguageManager.isArabic() ? "تم تسجيل الطلب كمُسلَّم." : "Order marked as delivered.");
@@ -213,9 +213,9 @@ public class OrdersManagementController extends BaseScreenController {
             return;
         }
 
-        orderFacade.restoreOrderInventory(selectedOrder);
+        orders().restoreOrderInventory(selectedOrder);
         selectedOrder.setStatus(OrderStatuses.CANCELLED);
-        orderFacade.persistOrder(selectedOrder);
+        orders().persistOrder(selectedOrder);
 
         com.supplysync.models.Message message = new com.supplysync.models.Message();
         message.setId(UUID.randomUUID().toString());
@@ -225,7 +225,7 @@ public class OrdersManagementController extends BaseScreenController {
         message.setTitle("Order Cancelled");
         message.setContent("Your order " + selectedOrder.getId() + " has been cancelled. Stock has been restored.");
         message.setStatus(OrderStatuses.CANCELLED);
-        orderFacade.sendMessage(message);
+        notifications().sendMessage(message);
 
         showAlert(Alert.AlertType.INFORMATION, LanguageManager.isArabic() ? "تم الإلغاء" : "Cancelled",
                 LanguageManager.isArabic() ? "تم إلغاء الطلب واستعادة المخزون." : "Order cancelled and inventory restored.");
