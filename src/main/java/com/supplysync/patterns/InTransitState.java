@@ -2,25 +2,27 @@ package com.supplysync.patterns;
 
 import com.supplysync.models.Order;
 
+/** @deprecated Use {@link com.supplysync.services.order.OrderWorkflowService}. */
+@Deprecated
 public class InTransitState implements OrderState {
     @Override
     public void approve(Order order) {
-        throw new IllegalStateException("Order already approved");
+        throw new UnsupportedOperationException("Use OrderWorkflowService");
     }
 
     @Override
     public void ship(Order order) {
-        throw new IllegalStateException("Order already in transit");
+        throw new UnsupportedOperationException("Use OrderWorkflowService");
     }
 
     @Override
     public void deliver(Order order) {
-        order.setState(new DeliveredState());
+        throw new UnsupportedOperationException("Use OrderWorkflowService");
     }
 
     @Override
     public void cancel(Order order) {
-        throw new IllegalStateException("Cannot cancel order in transit");
+        throw new UnsupportedOperationException("Use OrderWorkflowService");
     }
 
     @Override

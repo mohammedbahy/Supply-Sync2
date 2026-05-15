@@ -2,36 +2,34 @@ package com.supplysync.patterns;
 
 import com.supplysync.models.Order;
 
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-
+/**
+ * @deprecated Legacy pattern stub — use {@link com.supplysync.domain.order.OrderStateMachine} via
+ * {@link com.supplysync.services.order.OrderWorkflowService}.
+ */
+@Deprecated
 public class PendingState implements OrderState {
+    private static UnsupportedOperationException disabled() {
+        return new UnsupportedOperationException("Use OrderWorkflowService for status changes");
+    }
+
     @Override
     public void approve(Order order) {
-        order.setState(new InTransitState());
+        throw disabled();
     }
 
     @Override
     public void cancel(Order order) {
-        long hours = ChronoUnit.HOURS.between(
-                order.getEffectivePlacedAt(),
-                LocalDateTime.now()
-        );
-        if (hours < 24) {
-            order.setState(new CancelledState());
-        } else {
-            throw new IllegalStateException("Cannot cancel order older than 24 hours");
-        }
+        throw disabled();
     }
 
     @Override
     public void ship(Order order) {
-        throw new IllegalStateException("Must approve order before shipping");
+        throw disabled();
     }
 
     @Override
     public void deliver(Order order) {
-        throw new IllegalStateException("Must ship order before delivery");
+        throw disabled();
     }
 
     @Override

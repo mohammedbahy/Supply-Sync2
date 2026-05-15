@@ -145,4 +145,15 @@ public class InMemoryStorage implements Storage {
             marketerDrafts.remove(marketerId);
         }
     }
+
+    @Override
+    public void appendStatusHistory(String orderId,
+                                    String fromStatus,
+                                    String toStatus,
+                                    String transition,
+                                    String actorUserId) {
+        // In-memory audit trail (optional log)
+        System.out.printf("[ORDER_HISTORY] %s %s -> %s via %s by %s%n",
+                orderId, fromStatus, toStatus, transition, actorUserId);
+    }
 }

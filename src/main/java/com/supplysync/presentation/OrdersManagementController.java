@@ -1,8 +1,10 @@
 package com.supplysync.presentation;
 
+import com.supplysync.domain.order.OrderTransition;
 import com.supplysync.models.Order;
 import com.supplysync.models.OrderStatuses;
 import com.supplysync.models.Product;
+import com.supplysync.models.User;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -12,7 +14,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public class OrdersManagementController extends BaseScreenController {
@@ -55,7 +57,7 @@ public class OrdersManagementController extends BaseScreenController {
             pageSubtitle.setText(LanguageManager.get("Manage wholesale purchase orders and shipping status."));
         }
         if (approveBtn != null) {
-            approveBtn.setText(LanguageManager.isArabic() ? "في الطريق" : "Mark in transit");
+            approveBtn.setText(LanguageManager.isArabic() ? "اعتماد الطلب" : "Approve order");
         }
         if (deliverBtn != null) {
             deliverBtn.setText(LanguageManager.isArabic() ? "تم التسليم" : "Mark delivered");
@@ -75,8 +77,7 @@ public class OrdersManagementController extends BaseScreenController {
         ordersTable.getChildren().clear();
         ordersTable.getChildren().addAll(header, sep);
 
-        List<Order> orders = orders().getAllOrders();
-        for (Order order : orders) {
+        for (Order order : orders().getAllOrders()) {
             ordersTable.getChildren().add(createOrderRow(order));
         }
     }
@@ -92,8 +93,7 @@ public class OrdersManagementController extends BaseScreenController {
         Label nameLabel = new Label(order.getCustomerName());
         nameLabel.getStyleClass().addAll("col-customer", "body-cell");
 
-        String displayStatus = OrderStatuses.displayLabel(order.getStatus(), LanguageManager.isArabic());
-        Label statusLabel = new Label(displayStatus);
+        Label statusLabel = new Label(OrderStatuses.displayLabel(order.getStatus(), LanguageManager.isArabic()));
         statusLabel.getStyleClass().add(getStatusClass(order.getStatus()));
 
         Label priceLabel = new Label("$" + String.format("%.2f", order.getTotalAmount()));
@@ -134,16 +134,91 @@ public class OrdersManagementController extends BaseScreenController {
             detailsItemsContainer.getChildren().add(itemRow);
         }
 
-        String st = order.getStatus();
-        boolean pending = OrderStatuses.PENDING.equals(st);
-        boolean inTransit = OrderStatuses.IN_TRANSIT.equals(st) || OrderStatuses.APPROVED.equals(st) || "SHIPPED".equals(st);
-        boolean cancellable = pending || inTransit;
-        boolean delivered = OrderStatuses.DELIVERED.equals(st);
-        boolean cancelled = OrderStatuses.CANCELLED.equals(st);
+        refreshActionButtons();
+    }
 
-        approveBtn.setVisible(pending);
-        deliverBtn.setVisible(inTransit);
-        cancelBtn.setVisible(cancellable && !delivered && !cancelled);
+    private void refreshActionButtons() {
+        if (selectedOrder == null || orders() == null) {
+            return;
+        }
+        Set<OrderTransition> allowed = orders().getAllowedTransitions(selectedOrder);
+
+        boolean canApprove = allowed.contains(OrderTransition.APPROVE);
+        boolean canShip = allowed.contains(OrderTransition.SHIP);
+        boolean canDeliver = allowed.contains(OrderTransition.DELIVER);
+        boolean canCancel = allowed.contains(OrderTransition.CANCEL);
+
+        approveBtn.setVisible(canApprove || canShip);
+        approveBtn.setDisable(!canApprove && !canShip);
+        if (canApprove) {
+            approveBtn.setText(LanguageManager.isArabic() ? "اعتماد الطلب" : "Approve order");
+            approveBtn.setOnAction(e -> runTransition(OrderTransition.APPROVE));
+        } else if (canShip) {
+            approveBtn.setText(LanguageManager.isArabic() ? "شحن الطلب" : "Ship order");
+            approveBtn.setOnAction(e -> runTransition(OrderTransition.SHIP));
+        }
+
+        deliverBtn.setVisible(canDeliver);
+        deliverBtn.setDisable(!canDeliver);
+        deliverBtn.setOnAction(e -> runTransition(OrderTransition.DELIVER));
+
+        cancelBtn.setVisible(canCancel);
+        cancelBtn.setDisable(!canCancel);
+        cancelBtn.setOnAction(e -> runTransition(OrderTransition.CANCEL));
+    }
+
+    private void runTransition(OrderTransition transition) {
+        if (selectedOrder == null) {
+            return;
+        }
+        try {
+            Order updated = orders().executeTransition(selectedOrder.getId(), transition);
+            selectedOrder = updated;
+            sendWorkflowMessage(updated, transition);
+            showAlert(Alert.AlertType.INFORMATION,
+                    LanguageManager.isArabic() ? "تم التحديث" : "Updated",
+                    OrderStatuses.displayLabel(updated.getStatus(), LanguageManager.isArabic()));
+            renderOrders();
+            showOrderDetails(updated);
+        } catch (Exception ex) {
+            showAlert(Alert.AlertType.ERROR,
+                    LanguageManager.isArabic() ? "خطأ" : "Error",
+                    ex.getMessage());
+        }
+    }
+
+    private void sendWorkflowMessage(Order order, OrderTransition transition) {
+        if (notifications() == null) {
+            return;
+        }
+        com.supplysync.models.Message message = new com.supplysync.models.Message();
+        message.setId(UUID.randomUUID().toString());
+        message.setOrderId(order.getId());
+        message.setRecipientEmail(order.getCustomerName());
+        message.setSenderEmail("admin@gmail.com");
+        switch (transition) {
+            case APPROVE:
+                message.setTitle("Order approved");
+                message.setContent("Your order " + order.getId() + " was approved.");
+                break;
+            case SHIP:
+                message.setTitle("Order shipped");
+                message.setContent("Your order " + order.getId() + " is on the way.");
+                break;
+            case DELIVER:
+                message.setTitle("Order delivered");
+                message.setContent("Your order " + order.getId() + " has been delivered.");
+                break;
+            case CANCEL:
+                message.setTitle("Order cancelled");
+                message.setContent("Your order " + order.getId() + " was cancelled.");
+                break;
+            default:
+                message.setTitle("Order updated");
+                message.setContent("Order " + order.getId() + " status: " + order.getStatus());
+        }
+        message.setStatus(order.getStatus());
+        notifications().sendMessage(message);
     }
 
     @FXML
@@ -151,106 +226,42 @@ public class OrdersManagementController extends BaseScreenController {
         if (selectedOrder == null) {
             return;
         }
-        if (!OrderStatuses.PENDING.equals(selectedOrder.getStatus())) {
-            return;
+        Set<OrderTransition> allowed = orders().getAllowedTransitions(selectedOrder);
+        if (allowed.contains(OrderTransition.APPROVE)) {
+            runTransition(OrderTransition.APPROVE);
+        } else if (allowed.contains(OrderTransition.SHIP)) {
+            runTransition(OrderTransition.SHIP);
         }
-
-        selectedOrder.approve();
-        orders().persistOrder(selectedOrder);
-
-        com.supplysync.models.Message message = new com.supplysync.models.Message();
-        message.setId(UUID.randomUUID().toString());
-        message.setOrderId(selectedOrder.getId());
-        message.setRecipientEmail(selectedOrder.getCustomerName());
-        message.setSenderEmail("admin@gmail.com");
-        message.setTitle("Order in transit");
-        message.setContent("Your order " + selectedOrder.getId() + " is on the way.");
-        message.setStatus(OrderStatuses.IN_TRANSIT);
-        notifications().sendMessage(message);
-
-        showAlert(Alert.AlertType.INFORMATION, LanguageManager.isArabic() ? "تم التحديث" : "Updated",
-                LanguageManager.isArabic() ? "تم وضع الطلب في حالة \"في الطريق\"." : "Order marked as in transit.");
-        renderOrders();
-        showOrderDetails(selectedOrder);
     }
 
     @FXML
     private void handleMarkDelivered() {
-        if (selectedOrder == null) {
-            return;
-        }
-        String st = selectedOrder.getStatus();
-        if (!OrderStatuses.IN_TRANSIT.equals(st) && !OrderStatuses.APPROVED.equals(st) && !"SHIPPED".equals(st)) {
-            return;
-        }
-
-        selectedOrder.deliver();
-        orders().persistOrder(selectedOrder);
-
-        com.supplysync.models.Message message = new com.supplysync.models.Message();
-        message.setId(UUID.randomUUID().toString());
-        message.setOrderId(selectedOrder.getId());
-        message.setRecipientEmail(selectedOrder.getCustomerName());
-        message.setSenderEmail("admin@gmail.com");
-        message.setTitle("Order delivered");
-        message.setContent("Your order " + selectedOrder.getId() + " has been delivered.");
-        message.setStatus(OrderStatuses.DELIVERED);
-        notifications().sendMessage(message);
-
-        showAlert(Alert.AlertType.INFORMATION, LanguageManager.isArabic() ? "تم التسليم" : "Delivered",
-                LanguageManager.isArabic() ? "تم تسجيل الطلب كمُسلَّم." : "Order marked as delivered.");
-        renderOrders();
-        showOrderDetails(selectedOrder);
+        runTransition(OrderTransition.DELIVER);
     }
 
     @FXML
     private void handleCancelOrder() {
-        if (selectedOrder == null) {
-            return;
-        }
-        String st = selectedOrder.getStatus();
-        if (OrderStatuses.DELIVERED.equals(st) || OrderStatuses.CANCELLED.equals(st)) {
-            return;
-        }
-
-        orders().restoreOrderInventory(selectedOrder);
-        try {
-            selectedOrder.cancel();
-        } catch (IllegalStateException ex) {
-            selectedOrder.setStatus(OrderStatuses.CANCELLED);
-        }
-        orders().persistOrder(selectedOrder);
-
-        com.supplysync.models.Message message = new com.supplysync.models.Message();
-        message.setId(UUID.randomUUID().toString());
-        message.setOrderId(selectedOrder.getId());
-        message.setRecipientEmail(selectedOrder.getCustomerName());
-        message.setSenderEmail("admin@gmail.com");
-        message.setTitle("Order Cancelled");
-        message.setContent("Your order " + selectedOrder.getId() + " has been cancelled. Stock has been restored.");
-        message.setStatus(OrderStatuses.CANCELLED);
-        notifications().sendMessage(message);
-
-        showAlert(Alert.AlertType.INFORMATION, LanguageManager.isArabic() ? "تم الإلغاء" : "Cancelled",
-                LanguageManager.isArabic() ? "تم إلغاء الطلب واستعادة المخزون." : "Order cancelled and inventory restored.");
-        renderOrders();
-        showOrderDetails(selectedOrder);
+        runTransition(OrderTransition.CANCEL);
     }
 
     private String getStatusClass(String status) {
         if (status == null) {
             return "tag-pending";
         }
-        switch (status) {
-            case "PENDING":
+        switch (OrderStatuses.normalizeWorkflow(status)) {
+            case OrderStatuses.AWAITING_APPROVAL:
+            case OrderStatuses.PENDING:
                 return "tag-pending";
-            case "IN_TRANSIT":
-            case "APPROVED":
-            case "SHIPPED":
+            case OrderStatuses.APPROVED:
+            case OrderStatuses.PARTIALLY_SHIPPED:
+            case OrderStatuses.ON_HOLD:
+                return "tag-pending";
+            case OrderStatuses.IN_TRANSIT:
                 return "tag-in-transit";
-            case "DELIVERED":
+            case OrderStatuses.DELIVERED:
                 return "tag-delivered";
-            case "CANCELLED":
+            case OrderStatuses.CANCELLED:
+            case OrderStatuses.RETURNED:
                 return "tag-cancelled";
             default:
                 return "tag-pending";

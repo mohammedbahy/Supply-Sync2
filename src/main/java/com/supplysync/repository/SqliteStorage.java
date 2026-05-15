@@ -6,6 +6,7 @@ import com.supplysync.models.Message;
 import com.supplysync.models.Order;
 import com.supplysync.models.Product;
 import com.supplysync.models.User;
+import com.supplysync.domain.order.OrderStatusHydrator;
 import com.supplysync.models.OrderStatuses;
 
 import java.sql.Connection;
@@ -105,6 +106,15 @@ public class SqliteStorage implements Storage {
             ensureOrdersPlacedAtColumn(c);
             ensureOrdersCustomerCountryColumn(c);
             ensureUserOrderPrefsColumns(c);
+            s.execute("CREATE TABLE IF NOT EXISTS order_status_history ("
+                    + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    + "order_id TEXT NOT NULL,"
+                    + "from_status TEXT,"
+                    + "to_status TEXT NOT NULL,"
+                    + "transition TEXT,"
+                    + "actor_user_id TEXT,"
+                    + "created_at TEXT NOT NULL,"
+                    + "FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE)");
         }
     }
 
@@ -338,12 +348,8 @@ public class SqliteStorage implements Storage {
                 order.setCustomerPhone(rs.getString("customer_phone"));
                 order.setCustomerCountry(rs.getString("customer_country"));
                 order.setCustomerAddress(rs.getString("customer_address"));
-                String rawStatus = rs.getString("status");
-                if (OrderStatuses.APPROVED.equals(rawStatus)) {
-                    order.setStatus(OrderStatuses.IN_TRANSIT);
-                } else {
-                    order.setStatus(rawStatus);
-                }
+                OrderStatusHydrator.hydrate(order, rs.getString("status"));
+                inferInventoryReserved(order);
                 order.setTotalAmount(rs.getDouble("total_amount"));
                 order.setCommission(rs.getDouble("commission"));
                 String d = rs.getString("order_date");
@@ -674,5 +680,37 @@ public class SqliteStorage implements Storage {
         } catch (SQLException e) {
             throw new IllegalStateException("deleteMarketerOrderDraft failed", e);
         }
+    }
+
+    @Override
+    public void appendStatusHistory(String orderId,
+                                    String fromStatus,
+                                    String toStatus,
+                                    String transition,
+                                    String actorUserId) {
+        try (Connection c = connect();
+             PreparedStatement ps = c.prepareStatement(
+                     "INSERT INTO order_status_history (order_id,from_status,to_status,transition,actor_user_id,created_at) "
+                             + "VALUES (?,?,?,?,?,?)")) {
+            ps.setString(1, orderId);
+            ps.setString(2, fromStatus);
+            ps.setString(3, toStatus);
+            ps.setString(4, transition);
+            ps.setString(5, actorUserId);
+            ps.setString(6, LocalDateTime.now().format(ISO_DT));
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new IllegalStateException("appendStatusHistory failed", e);
+        }
+    }
+
+    private static void inferInventoryReserved(Order order) {
+        String s = order.getStatus();
+        boolean reserved = OrderStatuses.APPROVED.equals(s)
+                || OrderStatuses.PARTIALLY_SHIPPED.equals(s)
+                || OrderStatuses.ON_HOLD.equals(s)
+                || OrderStatuses.IN_TRANSIT.equals(s)
+                || OrderStatuses.DELIVERED.equals(s);
+        order.markInventoryReserved(reserved);
     }
 }

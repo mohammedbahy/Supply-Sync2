@@ -62,7 +62,8 @@ public class MarketingDashboardController extends BaseScreenController {
         totalOrdersLabel.setText(String.valueOf(allOrders.size()));
 
         double pendingComm = allOrders.stream()
-                .filter(o -> OrderStatuses.PENDING.equals(o.getStatus()))
+                .filter(o -> OrderStatuses.AWAITING_APPROVAL.equals(o.getStatus())
+                        || OrderStatuses.PENDING.equals(o.getStatus()))
                 .mapToDouble(Order::getCommission)
                 .sum();
         pendingCommissionsLabel.setText("$" + String.format("%.2f", pendingComm));

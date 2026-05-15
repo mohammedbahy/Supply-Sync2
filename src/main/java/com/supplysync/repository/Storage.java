@@ -10,5 +10,6 @@ public interface Storage extends
         UserRepository,
         MarketerRepository,
         MessageRepository,
-        DraftRepository {
+        DraftRepository,
+        OrderStatusHistoryRepository {
 }

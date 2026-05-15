@@ -2,6 +2,7 @@ package com.supplysync.patterns.creational.builder;
 
 import com.supplysync.models.Marketer;
 import com.supplysync.models.Order;
+import com.supplysync.domain.order.OrderStatusHydrator;
 import com.supplysync.models.OrderStatuses;
 import com.supplysync.models.Product;
 
@@ -110,7 +111,7 @@ public class OrderBuilder {
             order.setTotalAmount(products.stream().mapToDouble(Product::getPrice).sum());
         }
         order.setTrackingNumber(trackingNumber);
-        order.setStatus(OrderStatuses.PENDING);
+        OrderStatusHydrator.hydrate(order, OrderStatuses.AWAITING_APPROVAL);
         LocalDateTime now = LocalDateTime.now();
         order.setPlacedAt(now);
         order.setDate(LocalDate.now());

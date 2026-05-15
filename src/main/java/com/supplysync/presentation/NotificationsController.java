@@ -103,7 +103,9 @@ public class NotificationsController extends BaseScreenController {
         }
         reportsContainer.getChildren().add(reportCard(ordersTitle, ordersBody.toString().trim()));
 
-        long pending = todayOrders.stream().filter(o -> OrderStatuses.PENDING.equals(o.getStatus())).count();
+        long pending = todayOrders.stream().filter(o ->
+                OrderStatuses.AWAITING_APPROVAL.equals(o.getStatus())
+                        || OrderStatuses.PENDING.equals(o.getStatus())).count();
         long transit = todayOrders.stream().filter(o ->
                 OrderStatuses.IN_TRANSIT.equals(o.getStatus())
                         || OrderStatuses.APPROVED.equals(o.getStatus())

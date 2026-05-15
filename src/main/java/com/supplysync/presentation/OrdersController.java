@@ -1,6 +1,7 @@
 package com.supplysync.presentation;
 
 import com.supplysync.patterns.creational.builder.OrderBuilder;
+import com.supplysync.patterns.creational.factory.OrderFactory;
 import com.supplysync.models.MarketerCancelResult;
 import com.supplysync.models.MarketerOrderDraft;
 import com.supplysync.models.Order;
@@ -122,7 +123,8 @@ public class OrdersController extends BaseScreenController {
             cancelBtn.setTooltip(new Tooltip(LanguageManager.isArabic()
                     ? "إلغاء الطلب رقم " + orderId
                     : "Cancel order " + orderId));
-            boolean pending = OrderStatuses.PENDING.equals(o.getStatus());
+            boolean pending = OrderStatuses.AWAITING_APPROVAL.equals(o.getStatus())
+                    || OrderStatuses.PENDING.equals(o.getStatus());
             cancelBtn.setDisable(!pending);
             cancelBtn.setOnAction(e -> handleCancelMyOrder(orderId));
 
@@ -295,23 +297,21 @@ public class OrdersController extends BaseScreenController {
         double total = Double.parseDouble(totalText);
         LocalDateTime now = LocalDateTime.now();
 
-        Order order = new OrderBuilder()
-                .withId("ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
-                .withMarketerId(u.getId())
-                .withCustomerName(name)
-                .withCustomerPhone(phone)
-                .withShippingAddress(addressArea.getText().trim())
-                .withShippingCity(country)
-                .withProducts(new java.util.ArrayList<>(catalog().getCart()))
-                .withTotalAmount(total)
-                .build();
-        if (order.getMarketer() != null) {
-            order.getMarketer().setName(u.getName());
-        }
+        Order order = OrderFactory.createAwaitingApproval(
+                new OrderBuilder()
+                        .withId("ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
+                        .withMarketerId(u.getId())
+                        .withCustomerName(name)
+                        .withCustomerPhone(phone)
+                        .withShippingAddress(addressArea.getText().trim())
+                        .withShippingCity(country)
+                        .withProducts(new java.util.ArrayList<>(catalog().getCart()))
+                        .withTotalAmount(total),
+                u);
 
         String timestamp = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
-        orders().processOrder(order);
+        orders().submitOrder(order);
         auth().persistCheckoutContactForCurrentUser(name, phone, country, addressArea.getText().trim());
 
         Alert success = new Alert(Alert.AlertType.INFORMATION);
