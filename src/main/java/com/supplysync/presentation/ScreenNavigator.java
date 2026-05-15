@@ -9,27 +9,27 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
-import com.supplysync.facade.OrderFacade;
+import com.supplysync.facade.ApplicationContext;
 
 public final class ScreenNavigator {
     private static final double DEFAULT_WIDTH = 1200;
     private static final double DEFAULT_HEIGHT = 760;
-    private static OrderFacade orderFacade;
+    private static ApplicationContext applicationContext;
 
     private ScreenNavigator() {
     }
 
-    public static void setOrderFacade(OrderFacade facade) {
-        orderFacade = facade;
+    public static void setApplicationContext(ApplicationContext context) {
+        applicationContext = context;
     }
 
     public static void open(Event event, String fxmlPath, String title) throws IOException {
         FXMLLoader loader = new FXMLLoader(ScreenNavigator.class.getResource(fxmlPath));
         Parent root = loader.load();
-        
+
         Object controller = loader.getController();
         if (controller instanceof BaseScreenController) {
-            ((BaseScreenController) controller).setOrderFacade(orderFacade);
+            ((BaseScreenController) controller).setApplicationContext(applicationContext);
         }
 
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();

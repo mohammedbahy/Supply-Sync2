@@ -12,6 +12,12 @@ public class DeliveryAdapter implements DeliveryService {
 
     @Override
     public void schedule(Order order) {
+        String tracking = externalDeliveryGateway.scheduleDelivery(
+                order.getId(),
+                order.getShippingAddress(),
+                order.getCustomerName()
+        );
+        order.setTrackingNumber(tracking);
         externalDeliveryGateway.push(order);
     }
 }

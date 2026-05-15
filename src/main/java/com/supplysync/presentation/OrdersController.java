@@ -1,6 +1,7 @@
 package com.supplysync.presentation;
 
-import com.supplysync.models.Marketer;
+import com.supplysync.patterns.creational.builder.OrderBuilder;
+import com.supplysync.patterns.creational.factory.OrderFactory;
 import com.supplysync.models.MarketerCancelResult;
 import com.supplysync.models.MarketerOrderDraft;
 import com.supplysync.models.Order;
@@ -55,9 +56,12 @@ public class OrdersController extends BaseScreenController {
     private Label draftBannerText;
 
     @Override
-    public void setOrderFacade(com.supplysync.facade.OrderFacade orderFacade) {
-        super.setOrderFacade(orderFacade);
-        User u = orderFacade.getCurrentUser();
+    public void setApplicationContext(com.supplysync.facade.ApplicationContext app) {
+        super.setApplicationContext(app);
+        if (auth() == null) {
+            return;
+        }
+        User u = auth().getCurrentUser();
         if (u != null) {
             userNameLabel.setText(u.getName());
             String savedName = u.getPrefCustomerName() != null && !u.getPrefCustomerName().isBlank()
@@ -80,11 +84,11 @@ public class OrdersController extends BaseScreenController {
     }
 
     private void renderMyOrders() {
-        if (myOrdersContainer == null || orderFacade == null) {
+        if (myOrdersContainer == null || orders() == null) {
             return;
         }
         myOrdersContainer.getChildren().clear();
-        for (Order o : orderFacade.getMyOrders()) {
+        for (Order o : orders().getMyOrders()) {
             final String orderId = o.getId();
 
             VBox tile = new VBox(8);
@@ -119,7 +123,8 @@ public class OrdersController extends BaseScreenController {
             cancelBtn.setTooltip(new Tooltip(LanguageManager.isArabic()
                     ? "إلغاء الطلب رقم " + orderId
                     : "Cancel order " + orderId));
-            boolean pending = OrderStatuses.PENDING.equals(o.getStatus());
+            boolean pending = OrderStatuses.AWAITING_APPROVAL.equals(o.getStatus())
+                    || OrderStatuses.PENDING.equals(o.getStatus());
             cancelBtn.setDisable(!pending);
             cancelBtn.setOnAction(e -> handleCancelMyOrder(orderId));
 
@@ -161,7 +166,7 @@ public class OrdersController extends BaseScreenController {
     }
 
     private void handleCancelMyOrder(String orderId) {
-        MarketerCancelResult r = orderFacade.cancelOrderAsMarketer(orderId);
+        MarketerCancelResult r = orders().cancelOrderAsMarketer(orderId);
         if (r == MarketerCancelResult.SUCCESS) {
             Alert ok = new Alert(Alert.AlertType.INFORMATION);
             ok.setContentText(LanguageManager.isArabic() ? "تم إلغاء الطلب واستعادة الكميات في المخزون." : "Order cancelled and stock was restored.");
@@ -189,12 +194,12 @@ public class OrdersController extends BaseScreenController {
     }
 
     private void renderOrderItems() {
-        if (orderItemsContainer == null || orderFacade == null) {
+        if (orderItemsContainer == null || catalog() == null) {
             return;
         }
         orderItemsContainer.getChildren().clear();
 
-        List<Product> selectedProducts = orderFacade.getCart();
+        List<Product> selectedProducts = catalog().getCart();
         double subtotal = 0;
 
         for (Product p : selectedProducts) {
@@ -218,7 +223,7 @@ public class OrdersController extends BaseScreenController {
             Button removeBtn = new Button(LanguageManager.isArabic() ? "حذف" : "Remove");
             removeBtn.setStyle("-fx-background-color: #fee2e2; -fx-text-fill: #dc2626; -fx-font-size: 12px;");
             removeBtn.setOnAction(e -> {
-                orderFacade.removeOneUnitFromCart(p.getId());
+                catalog().removeOneUnitFromCart(p.getId());
                 renderOrderItems();
             });
 
@@ -250,7 +255,7 @@ public class OrdersController extends BaseScreenController {
 
     @FXML
     private void handleSubmitOrder() {
-        if (orderFacade.getCart().isEmpty()) {
+        if (catalog() == null || catalog().getCart().isEmpty()) {
             showAlert(LanguageManager.get("Validation Error"), LanguageManager.isArabic() ? "السلة فارغة، يرجى إضافة منتجات أولاً." : "Cart is empty, please add products first.");
             return;
         }
@@ -282,30 +287,32 @@ public class OrdersController extends BaseScreenController {
             return;
         }
 
-        Order order = new Order();
-        order.setId("ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
-        order.setCustomerName(name);
-        order.setCustomerPhone(phone);
-        order.setCustomerCountry(country);
-        order.setCustomerAddress(addressArea.getText().trim());
+        User u = auth().getCurrentUser();
+        if (u == null || u.getId() == null) {
+            showAlert(LanguageManager.get("Validation Error"), LanguageManager.isArabic() ? "يجب تسجيل الدخول." : "You must be signed in.");
+            return;
+        }
+
         String totalText = totalLabel.getText().replace("$", "").trim();
         double total = Double.parseDouble(totalText);
-        order.setTotalAmount(total);
-        order.setCommission(total * 0.05);
-        order.getProducts().addAll(orderFacade.getCart());
-
         LocalDateTime now = LocalDateTime.now();
-        order.setPlacedAt(now);
-        order.setDate(now.toLocalDate());
-        User u = orderFacade.getCurrentUser();
-        if (u != null) {
-            order.setMarketer(new Marketer(u.getId(), u.getName()));
-        }
+
+        Order order = OrderFactory.createAwaitingApproval(
+                new OrderBuilder()
+                        .withId("ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
+                        .withMarketerId(u.getId())
+                        .withCustomerName(name)
+                        .withCustomerPhone(phone)
+                        .withShippingAddress(addressArea.getText().trim())
+                        .withShippingCity(country)
+                        .withProducts(new java.util.ArrayList<>(catalog().getCart()))
+                        .withTotalAmount(total),
+                u);
 
         String timestamp = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
-        orderFacade.processOrder(order);
-        orderFacade.persistCheckoutContactForCurrentUser(name, phone, country, addressArea.getText().trim());
+        orders().submitOrder(order);
+        auth().persistCheckoutContactForCurrentUser(name, phone, country, addressArea.getText().trim());
 
         Alert success = new Alert(Alert.AlertType.INFORMATION);
         success.setTitle(LanguageManager.get("Success"));
@@ -324,7 +331,7 @@ public class OrdersController extends BaseScreenController {
         if (draftBanner == null) {
             return;
         }
-        boolean has = orderFacade != null && orderFacade.hasOrderDraft();
+        boolean has = drafts() != null && drafts().hasOrderDraft();
         draftBanner.setVisible(has);
         draftBanner.setManaged(has);
         if (draftBannerText != null && has) {
@@ -336,15 +343,15 @@ public class OrdersController extends BaseScreenController {
 
     @FXML
     private void handleLoadDraft() {
-        if (orderFacade == null) {
+        if (drafts() == null || catalog() == null) {
             return;
         }
-        Optional<MarketerOrderDraft> opt = orderFacade.getOrderDraft();
+        Optional<MarketerOrderDraft> opt = drafts().getOrderDraft();
         if (!opt.isPresent()) {
             showAlert(LanguageManager.get("Validation Error"), LanguageManager.get("No saved draft"));
             return;
         }
-        if (!orderFacade.getCart().isEmpty()) {
+        if (!catalog().getCart().isEmpty()) {
             Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
             confirm.setTitle(LanguageManager.get("Load draft"));
             confirm.setHeaderText(null);
@@ -354,7 +361,7 @@ public class OrdersController extends BaseScreenController {
             }
         }
         MarketerOrderDraft d = opt.get();
-        orderFacade.applyOrderDraft(d);
+        drafts().applyOrderDraft(d);
         if (d.getCustomerName() != null) {
             customerNameField.setText(d.getCustomerName());
         }
@@ -374,17 +381,17 @@ public class OrdersController extends BaseScreenController {
 
     @FXML
     private void handleDiscardDraft() {
-        if (orderFacade == null) {
+        if (drafts() == null) {
             return;
         }
-        orderFacade.discardOrderDraft();
+        drafts().discardOrderDraft();
         refreshDraftBanner();
         showAlert(Alert.AlertType.INFORMATION, LanguageManager.get("Remove draft"), LanguageManager.get("Draft discarded"));
     }
 
     @FXML
     private void handleSaveDraft() {
-        if (orderFacade == null || orderFacade.getCurrentUser() == null) {
+        if (drafts() == null || auth() == null || auth().getCurrentUser() == null) {
             showAlert(LanguageManager.get("Validation Error"), LanguageManager.isArabic() ? "يجب تسجيل الدخول." : "You must be signed in.");
             return;
         }
@@ -392,7 +399,7 @@ public class OrdersController extends BaseScreenController {
         String ph = phoneField.getText() != null ? phoneField.getText().trim() : "";
         String ctry = countryField != null && countryField.getText() != null ? countryField.getText().trim() : "";
         String addr = addressArea.getText() != null ? addressArea.getText().trim() : "";
-        orderFacade.saveOrderDraftFromForm(nm, ph, ctry, addr);
+        drafts().saveOrderDraftFromForm(nm, ph, ctry, addr);
         refreshDraftBanner();
         showAlert(Alert.AlertType.INFORMATION, LanguageManager.get("Draft saved title"), LanguageManager.get("Draft saved detail"));
     }

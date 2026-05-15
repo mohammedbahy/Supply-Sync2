@@ -68,7 +68,7 @@ public class RegistrationController extends BaseScreenController {
         newUser.setRole("MARKETER"); // Default role for new registrations
 
         try {
-            orderFacade.register(newUser);
+            auth().register(newUser);
             showAlert(Alert.AlertType.INFORMATION, "Registration Successful", "Your account has been created. Please sign in.");
             openLogin(event);
         } catch (Exception e) {

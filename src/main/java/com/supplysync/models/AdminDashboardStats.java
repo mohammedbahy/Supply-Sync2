@@ -55,10 +55,17 @@ public final class AdminDashboardStats {
         int sku = products.size();
         int stockSum = products.stream().mapToInt(Product::getQuantity).sum();
 
-        long pending = orders.stream().filter(o -> OrderStatuses.PENDING.equals(o.getStatus())).count();
+        long pending = orders.stream().filter(o -> {
+            String s = o.getStatus();
+            return OrderStatuses.AWAITING_APPROVAL.equals(s)
+                    || OrderStatuses.PENDING.equals(s)
+                    || OrderStatuses.ON_HOLD.equals(s);
+        }).count();
         long inTransit = orders.stream().filter(o -> {
             String s = o.getStatus();
-            return OrderStatuses.IN_TRANSIT.equals(s) || OrderStatuses.APPROVED.equals(s) || "SHIPPED".equals(s);
+            return OrderStatuses.IN_TRANSIT.equals(s)
+                    || OrderStatuses.PARTIALLY_SHIPPED.equals(s)
+                    || "SHIPPED".equals(s);
         }).count();
         long delivered = orders.stream().filter(o -> OrderStatuses.DELIVERED.equals(o.getStatus())).count();
         long shipped = orders.stream().filter(o -> "SHIPPED".equals(o.getStatus())).count();

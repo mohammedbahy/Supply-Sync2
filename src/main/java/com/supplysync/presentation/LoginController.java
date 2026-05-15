@@ -43,7 +43,11 @@ public class LoginController extends BaseScreenController {
             return;
         }
 
-        Optional<User> user = orderFacade.login(email.trim(), password);
+        if (auth() == null) {
+            showAlert("Login Failed", "Application is not initialized.");
+            return;
+        }
+        Optional<User> user = auth().login(email.trim(), password);
         if (user.isPresent()) {
             User loggedInUser = user.get();
             try {

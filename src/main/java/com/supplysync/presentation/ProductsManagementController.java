@@ -22,14 +22,14 @@ public class ProductsManagementController extends BaseScreenController {
     private Button addProductBtn;
 
     public void initialize() {
-        if (orderFacade != null) {
+        if (catalog() != null) {
             renderProducts();
         }
     }
 
     @Override
-    public void setOrderFacade(com.supplysync.facade.OrderFacade orderFacade) {
-        super.setOrderFacade(orderFacade);
+    public void setApplicationContext(com.supplysync.facade.ApplicationContext app) {
+        super.setApplicationContext(app);
         renderProducts();
     }
 
@@ -48,12 +48,12 @@ public class ProductsManagementController extends BaseScreenController {
     }
 
     private boolean isAdmin() {
-        User u = orderFacade != null ? orderFacade.getCurrentUser() : null;
+        User u = auth() != null ? auth().getCurrentUser() : null;
         return u != null && "ADMIN".equalsIgnoreCase(u.getRole());
     }
 
     private void renderProducts() {
-        if (productsTable == null || orderFacade == null) {
+        if (productsTable == null || catalog() == null) {
             return;
         }
 
@@ -64,7 +64,7 @@ public class ProductsManagementController extends BaseScreenController {
             productsTable.getChildren().addAll(header, sep);
         }
 
-        List<Product> products = orderFacade.getCatalog();
+        List<Product> products = catalog().getCatalog();
         for (Product product : products) {
             productsTable.getChildren().add(createProductRow(product));
         }
@@ -120,7 +120,7 @@ public class ProductsManagementController extends BaseScreenController {
             confirm.setContentText("Delete " + p.getName() + " (" + p.getId() + ")?");
             confirm.showAndWait().ifPresent(bt -> {
                 if (bt == ButtonType.OK) {
-                    orderFacade.deleteProduct(p.getId());
+                    catalog().deleteProduct(p.getId());
                     renderProducts();
                 }
             });
@@ -178,7 +178,7 @@ public class ProductsManagementController extends BaseScreenController {
                 showAlert(Alert.AlertType.ERROR, "Validation", "Product ID is required.");
                 return null;
             }
-            if (orderFacade.getCatalog().stream().anyMatch(x -> x.getId().equals(id))) {
+            if (catalog().getCatalog().stream().anyMatch(x -> x.getId().equals(id))) {
                 showAlert(Alert.AlertType.ERROR, "Error", "ID already exists.");
                 return null;
             }
@@ -200,7 +200,7 @@ public class ProductsManagementController extends BaseScreenController {
         });
 
         dialog.showAndWait().ifPresent(product -> {
-            orderFacade.saveProduct(product);
+            catalog().saveProduct(product);
             renderProducts();
             showAlert(Alert.AlertType.INFORMATION, "Success", LanguageManager.isArabic() ? "تم حفظ المنتج." : "Product saved to the database.");
         });
@@ -263,7 +263,7 @@ public class ProductsManagementController extends BaseScreenController {
             }
         });
 
-        dialog.showAndWait().ifPresent(orderFacade::saveProduct);
+        dialog.showAndWait().ifPresent(catalog()::saveProduct);
         renderProducts();
     }
 

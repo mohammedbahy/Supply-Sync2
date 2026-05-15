@@ -1,6 +1,6 @@
 package com.supplysync.dashboard;
 
-import com.supplysync.facade.OrderFacade;
+import com.supplysync.facade.DashboardFacade;
 import com.supplysync.models.AdminDashboardStats;
 import com.supplysync.models.Product;
 
@@ -8,22 +8,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Adapts {@link OrderFacade} to {@link DashboardDataPort} (Adapter pattern / DIP).
+ * Adapts {@link DashboardFacade} to {@link DashboardDataPort} (Adapter pattern / DIP).
  */
 public final class OrderFacadeDashboardDataAdapter implements DashboardDataPort {
-    private final OrderFacade facade;
+    private final DashboardFacade dashboard;
 
-    public OrderFacadeDashboardDataAdapter(OrderFacade facade) {
-        this.facade = facade;
+    public OrderFacadeDashboardDataAdapter(DashboardFacade dashboard) {
+        this.dashboard = dashboard;
     }
 
     @Override
     public AdminDashboardStats loadStatistics() {
-        return facade.getAdminDashboardStats();
+        return dashboard.loadStatistics();
     }
 
     @Override
     public List<Product> loadProductCatalogSnapshot() {
-        return new ArrayList<>(facade.getCatalog());
+        return new ArrayList<>(dashboard.loadProductCatalogSnapshot());
     }
 }
